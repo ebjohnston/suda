@@ -12,7 +12,8 @@
     "dependencies": {
         "discord.js": "*",
         "warframe-worldstate-parser": "*",
-        "winston": "*"
+        "winston": "*",
+        "request": "*"
     },
     "main": "discord_bot.js"
 }
