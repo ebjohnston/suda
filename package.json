@@ -1,36 +1,18 @@
 {
-  "name": "Suda",
-  "version": "1.0",
-  "description": "Discord Bot",
-  "readme": "README.md",
-  "author": "",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ebjohnston/Suda.git"
-  },
-  "license": "GPL-2.0",
-  "dependencies": {
-    "cleverbot-node": "0.2.x",
-    "csgo-market": "*",
-    "discord.js": "*",
-    "feedparser": "*",
-    "google": "1.1.x",
-    "google-images": "0.1.x",
-    "html-to-text": "*",
-    "imgflipper": "*",
-    "nock": "1.7.x",
-    "pmx": "^0.5.5",
-    "xml2js": "*",
-    "querystring": "*",
-    "request": ">=2.58.0",
-    "sinon": "1.14.x",
-    "steamidconvert": "*",
-    "tumblr.js": "0.0.x",
-    "underscore": "1.8.x",
-    "wikijs": "*",
-    "winston": "1.0.x",
-    "yahoo-finance": "*",
-    "youtube-node": "1.2.x"
-  },
-  "main": "discord_bot.js"
+    "name": "Suda",
+    "version": "1.0",
+    "description": "Discord Bot",
+    "readme": "README.md",
+    "author": "Ethan Johnston",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ebjohnston/Suda.git"
+    },
+    "license": "GPL-2.0",
+    "dependencies": {
+        "discord.js": "*",
+        "warframe-worldstate-parser": "*",
+        "winston": "*"
+    },
+    "main": "discord_bot.js"
 }
