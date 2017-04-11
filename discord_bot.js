@@ -19,7 +19,7 @@ var commands = {
         name: "ping",
         description: "Responds pong, useful for checking if bot is alive.",
         extendedhelp: "I'll reply to your ping with pong. This way you can see if I'm still able to take commands.",
-        process: function(bot, msg, suffix) {
+        process: (bot, msg, suffix) => {
             msg.channel.sendMessage("pong");
             if (suffix) {
                 msg.channel.sendMessage("note that ping takes no arguments!");
@@ -30,7 +30,7 @@ var commands = {
         name: "praise",
         description: "Praise the sun!",
         extendedhelp: "Image macro - Solaire praising the sun (Dark Souls)",
-        process: function(bot, msg, suffix) {
+        process: (bot, msg, suffix) => {
             msg.delete(); // warning: requires "Manage Messages" permission
             msg.channel.sendFile("./images/praise.gif");
         }
@@ -39,7 +39,7 @@ var commands = {
         name: "lenny",
         description: "( ͡° ͜ʖ ͡°)",
         extendedhelp: "displays the Unicode emoticon ( ͡° ͜ʖ ͡°) in place of the command",
-        process: function(bot, msg, suffix) {
+        process: (bot, msg, suffix) => {
             msg.delete(); // warning: requires "Manage Messages" permission
             msg.channel.sendMessage(msg.content.substring(6) + " ( ͡° ͜ʖ ͡°)");
         }
@@ -50,7 +50,7 @@ bot.on("ready", function() {
     console.log("I am ready!");
 });
 
-bot.on("disconnected", function() {
+bot.on("disconnected", () => {
     //Logger.log("error", "Disconnected!");
     process.exit(0); // exit node.js without an error as this is almost always intentional
 });
@@ -65,7 +65,7 @@ This will work, so long as the bot isn"t overloaded or still busy.
 */
 
 // create an event listener for messages
-bot.on("message", function(msg) {
+bot.on("message", msg => {
 
 /*
     // log non-DM messages
