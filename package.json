@@ -1,6 +1,6 @@
 {
     "name": "Suda",
-    "version": "1.0",
+    "version": "0.0.1",
     "description": "Discord Bot",
     "readme": "README.md",
     "author": "Ethan Johnston",
@@ -12,8 +12,8 @@
     "dependencies": {
         "discord.js": "*",
         "warframe-worldstate-parser": "*",
-        "winston": "*",
-        "request": "*"
+        "request": "*",
+        "arraylist": "*"
     },
     "main": "discord_bot.js"
 }

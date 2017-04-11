@@ -1,14 +1,19 @@
 // import dependent modules
 const Discord = require("discord.js");
-//const WarframeWorldState = require("warframe-worldstate-parser");
+const WarframeWorldState = require("warframe-worldstate-parser");
+const Request = require("request");
+const ArrayList = require("arraylist");
 
 // initialize imported modules
 const bot = new Discord.Client();
+var alerts_posted = new ArrayList;
+var invasions_posted = new ArrayList;
 //const warframeWorld = new WarframeWorldState(json-data);
 
 // configuration settings
 const settings = require("./settings.json");
 const prefix = settings.command_prefix;
+const token = settings.discord_token;
 
 // logging utilities
 //const ChatLog = require("./runtime/logger.js").ChatLog;
@@ -18,10 +23,11 @@ const prefix = settings.command_prefix;
     List of command properties
     -name
     -description
-    -extendedhelp
     -usage
-    -adminOnly
+    -help
+    -admin
     -timeout (in seconds)
+    -warframe
     -process (lambda)
 */
 
@@ -29,51 +35,76 @@ var commands = {
     "ping": {
         name: "ping",
         description: "Responds pong, useful for checking if bot is alive.",
-        extendedhelp: "I'll reply to your ping with pong. This way you can see if I'm still able to take commands.",
+        help: "I'll reply to your ping with pong. This way you can see if I'm still able to take commands.",
+        usage: "[No parameters]",
+        admin: false,
         process: (bot, msg, suffix) => {
             msg.channel.sendMessage("pong");
+
             if (suffix) {
-                msg.channel.sendMessage("note that ping takes no arguments!");
+                msg.channel.sendMessage("Note: ping takes no arguments");
             }
         }
     },
     "praise": {
         name: "praise",
         description: "Praise the sun!",
-        extendedhelp: "Image macro - Solaire praising the sun (Dark Souls)",
+        help: "Image macro - Solaire praising the sun (Dark Souls)",
+        usage: "[No parameters]",
+        admin: false,
         process: (bot, msg, suffix) => {
             msg.delete(); // warning: requires "Manage Messages" permission
             msg.channel.sendFile("./images/praise.gif");
+
+            if (suffix) {
+                msg.channel.sendMessage("Note: praise takes no arguments");
+            }
         }
     },
     "lenny": {
         name: "lenny",
         description: "( ͡° ͜ʖ ͡°)",
-        extendedhelp: "displays the Unicode emoticon ( ͡° ͜ʖ ͡°) in place of the command",
+        help: "displays the Unicode emoticon ( ͡° ͜ʖ ͡°) in place of the command",
+        usage: "[No parameters]",
+        admin: false,
         process: (bot, msg, suffix) => {
             msg.delete(); // warning: requires "Manage Messages" permission
-            msg.channel.sendMessage(msg.content.substring(6) + " ( ͡° ͜ʖ ͡°)");
-        }
-    },
-    "echo-wf": {
-        name: "echo-wf",
-        description: "retrieve and echo worldState.php",
-        extendedhelp: "sends an HTTP GET request to Digital Extremes and prints php to console",
-        process: (bot, msg, suffix) => {
-            var request = require('request');
+            msg.channel.sendMessage("( ° ͜ʖ ͡°)");
 
-            request('http://content.warframe.com/dynamic/worldState.php', (error, response, body) => {
-                console.log('error:', error); // Print the error if one occurred
-                console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-                //console.log('body:', body); // Print the HTML for the Google homepage.
-                //var wf_json = JSON.parse(body);
-            });
+            if (suffix) {
+                msg.channel.sendMessage("Note: lenny takes no arguments");
+            }
         }
     },
+    "baro": {
+        name: "baro",
+        description: "retrieve current info on Void Trader",
+        help: "scrapes current worldState.php from warframe and returns Void Trader information",
+        usage: "[No parameters]",
+        admin: false,
+        warframe: true,
+        process: (bot, msg, suffix) => {
+            Request('http://content.warframe.com/dynamic/worldState.php', (error, response, body) => {
+                if (response.statusCode != 200) {
+                    msg.channel.sendMessage("An error has occured: webpage not accessible");
+                }
+                else {
+                    var warframe_world = new WarframeWorldState(body);
+                    msg.channel.sendMessage("`" + warframe_world.voidTrader.toString() + "`");
+                }
+            });
+
+            if (suffix) {
+                msg.channel.sendMessage("Note: baro takes no arguments");
+            }
+        }
+    }
 }
 
 bot.on("ready", () => {
     console.log("I am ready!");
+
+    scrapeWarframe();
 });
 
 bot.on("disconnected", () => {
@@ -121,5 +152,75 @@ bot.on("message", msg => {
     }
 });
 
+function scrapeWarframe() {
+
+    setInterval( () => {
+        Request('http://content.warframe.com/dynamic/worldState.php', (error, response, body) => {
+            if (response.statusCode != 200) {
+                msg.channel.sendMessage("An error has occured: webpage not accessible");
+            }
+            else {
+                var warframe_world = new WarframeWorldState(body);
+                var warframe_channel = bot.guilds.find("name", "Kvasir").channels.find("name", "warframe");
+
+                if (warframe_world && warframe_channel) {
+                    displayAlerts(warframe_world, warframe_channel);
+                }
+            }
+        });
+    }, 60000);
+}
+
+function displayAlerts(warframe_world, warframe_channel) {
+    // buffer to cleanse list of stored alerts
+    var current_alerts = new ArrayList;
+
+    for (var i in warframe_world.alerts) {
+        alert = warframe_world.alerts[i];
+        // omit duplicate alerts and irrelevant item rewards
+        if (!alerts_posted.contains(alert.id) && hasGoodItem(alert)) {
+            warframe_channel.sendMessage("```" + alert.toString() + "```");
+            alerts_posted.add(alert.id);
+        }
+
+        // populate alert buffer
+        current_alerts.add(alert.id);
+    }
+
+    // remove alerts once they expire
+    alerts_posted = alerts_posted.intersection(current_alerts);
+
+    var current_invasions = new ArrayList;
+
+    for (var i in warframe_world.invasions) {
+        invasion = warframe_world.invasions[i];
+        // omit duplicate invasions and irrelevant item rewards
+        if (!invasions_posted.contains(invasion.node) && hasGoodItem(invasion)) {
+            warframe_channel.sendMessage("```" + invasion.toString() + "```");
+            invasions_posted.add(invasion.node);
+        }
+
+        // populate invasion buffer
+        current_invasions.add(invasion.node);
+    }
+
+    // remove invasions once they expire
+    invasions_posted = invasions_posted.intersection(current_invasions);
+}
+
+//TODO: add custom item matching
+function hasGoodItem(event) {
+    var item_regex = /nitain|forma|catalyst|reactor|exilus|kubrow|kavat|vandal|wraith/;
+
+    rewards = event.getRewardTypes();
+    for (var i in rewards) {
+        if (item_regex.test(rewards[i])) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // log in the bot
-bot.login(settings.discord_password);
+bot.login(token);
