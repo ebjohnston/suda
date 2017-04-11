@@ -1,11 +1,12 @@
-# Dependency directory
-node_modules
-build
+# dependencies
+node_modules/
 
 # Auth file (sensitive data)
 settings.json
 
 # data folders
-images
-music
-logs
+images/
+music/
+
+# additional files
+misc/

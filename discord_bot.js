@@ -14,6 +14,17 @@ const prefix = settings.command_prefix;
 //const ChatLog = require("./runtime/logger.js").ChatLog;
 //const Logger = require("./runtime/logger.js").Logger;
 
+/*
+    List of command properties
+    -name
+    -description
+    -extendedhelp
+    -usage
+    -adminOnly
+    -timeout (in seconds)
+    -process (lambda)
+*/
+
 var commands = {
     "ping": {
         name: "ping",
@@ -43,10 +54,25 @@ var commands = {
             msg.delete(); // warning: requires "Manage Messages" permission
             msg.channel.sendMessage(msg.content.substring(6) + " ( ͡° ͜ʖ ͡°)");
         }
-    }
+    },
+    "echo-wf": {
+        name: "echo-wf",
+        description: "retrieve and echo worldState.php",
+        extendedhelp: "sends an HTTP GET request to Digital Extremes and prints php to console",
+        process: (bot, msg, suffix) => {
+            var request = require('request');
+
+            request('http://content.warframe.com/dynamic/worldState.php', (error, response, body) => {
+                console.log('error:', error); // Print the error if one occurred
+                console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+                //console.log('body:', body); // Print the HTML for the Google homepage.
+                //var wf_json = JSON.parse(body);
+            });
+        }
+    },
 }
 
-bot.on("ready", function() {
+bot.on("ready", () => {
     console.log("I am ready!");
 });
 
