@@ -31,7 +31,7 @@ var commands = {
         description: "Praise the sun!",
         extendedhelp: "Image macro - Solaire praising the sun (Dark Souls)",
         process: function(bot, msg, suffix) {
-            msg.delete();
+            msg.delete(); // warning: requires "Manage Messages" permission
             msg.channel.sendFile("./images/praise.gif");
         }
     },
@@ -40,7 +40,7 @@ var commands = {
         description: "( ͡° ͜ʖ ͡°)",
         extendedhelp: "displays the Unicode emoticon ( ͡° ͜ʖ ͡°) in place of the command",
         process: function(bot, msg, suffix) {
-            msg.delete();
+            msg.delete(); // warning: requires "Manage Messages" permission
             msg.channel.sendMessage(msg.content.substring(6) + " ( ͡° ͜ʖ ͡°)");
         }
     }
@@ -85,10 +85,10 @@ bot.on("message", function(msg) {
     console.log("message received: " + msg);
     //Logger.log("info", msg.author.username + " executed <" + msg.content + ">");
 
-    var commandText = msg.content.split(" ")[0].substring(1).toLowerCase();
-    var suffix = msg.content.substring(commandText.length + 2); //add one for the ! and one for the space
+    var command_text = msg.content.split(" ")[0].substring(1).toLowerCase();
+    var suffix = msg.content.substring(command_text.length + 2); //add one for the ! and one for the space
 
-    var command = commands[commandText];
+    var command = commands[command_text];
 
     if (command) {
         command.process(bot, msg, suffix);
