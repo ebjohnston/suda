@@ -192,17 +192,21 @@ function scrapeWarframe() {
             }
             else {
                 var warframe_world = new WarframeWorldState(body);
-                var warframe_channel = bot.guilds.find("name", "Kvasir").channels.find("name", "warframe");
+                var warframe_channel = bot.guilds.find("name", "NerdHQ").channels.find("name", "warfarm");
 
                 if (warframe_world && warframe_channel) {
-                    processAlerts(warframe_world, warframe_channel);
-                    processInvasions(warframe_world, warframe_channel);
-                    processNews(warframe_world, warframe_channel);
-                    processWeekends(warframe_world, warframe_channel);
+                    processWarframe(warframe_world, warframe_channel);
                 }
             }
         });
     }, 60000);
+}
+
+function processWarframe(warframe_world, warframe_channel) {
+    processAlerts(warframe_world, warframe_channel);
+    processInvasions(warframe_world, warframe_channel);
+    processNews(warframe_world, warframe_channel);
+    processWeekends(warframe_world, warframe_channel);
 }
 
 function processAlerts(warframe_world, warframe_channel) {
