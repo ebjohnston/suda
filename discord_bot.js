@@ -1,8 +1,8 @@
 // import dependent modules
 const Discord = require("discord.js");
 const WarframeWorldState = require("warframe-worldstate-parser");
-const Request = require("request");
 const ArrayList = require("arraylist");
+const Request = require("request");
 
 // initialize imported modules
 const bot = new Discord.Client();
@@ -36,7 +36,7 @@ const token = settings.discord_token;
 var commands = {
     "ping": {
         name: "ping",
-        description: "Responds pong, useful for checking if bot is alive.",
+        description: "responds pong, useful for checking if bot is alive.",
         help: "I'll reply to your ping with pong. This way you can see if I'm still able to take commands.",
         usage: "[No parameters]",
         admin: false,
@@ -45,21 +45,6 @@ var commands = {
 
             if (suffix) {
                 msg.channel.sendMessage("Note: ping takes no arguments");
-            }
-        }
-    },
-    "praise": {
-        name: "praise",
-        description: "Praise the sun!",
-        help: "Image macro - Solaire praising the sun (Dark Souls)",
-        usage: "[No parameters]",
-        admin: false,
-        process: (bot, msg, suffix) => {
-            msg.delete(); // warning: requires "Manage Messages" permission
-            msg.channel.sendFile("./images/praise.gif");
-
-            if (suffix) {
-                msg.channel.sendMessage("Note: praise takes no arguments");
             }
         }
     },
@@ -76,6 +61,23 @@ var commands = {
             if (suffix) {
                 msg.channel.sendMessage("Note: lenny takes no arguments");
             }
+        }
+    },
+    "img": {
+        name: "img",
+        description: "Send an image from the server directory",
+        help: "query ./images and post an image in chat if a match is found",
+        usage: "[image name] -ext",
+        admin: false,
+        process: (bot, msg, suffix) => {
+            // msg.delete(); // warning: requires "Manage Messages" permission
+            // msg.channel.sendFile("./images/praise.gif");
+            //
+            // if (suffix) {
+            //     msg.channel.sendMessage("Note: praise takes no arguments");
+            // }
+
+            msg.channel.sendMessage("img under construction. Sorry :c");
         }
     },
     "baro": {
@@ -186,16 +188,20 @@ bot.on("message", msg => {
 
 function scrapeWarframe() {
     setInterval( () => {
-        Request('http://content.warframe.com/dynamic/worldState.php', (error, response, body) => {
-            if (response.statusCode != 200) {
+        Request("http://content.warframe.com/dynamic/worldState.php", (error, response, body) => {
+            if (error || response.statusCode != 200) {
                 msg.channel.sendMessage("An error has occured: webpage not accessible");
             }
             else {
                 var warframe_world = new WarframeWorldState(body);
-                var warframe_channel = bot.guilds.find("name", "NerdHQ").channels.find("name", "warfarm");
+                var warframe_servers = settings.warframe_servers;
 
-                if (warframe_world && warframe_channel) {
-                    processWarframe(warframe_world, warframe_channel);
+                for (var i in warframe_servers) {
+                    var warframe_channel = bot.guilds.find("name", warframe_servers[i].server).channels.find("name", warframe_servers[i].channel);
+
+                    if (warframe_world && warframe_channel) {
+                        processWarframe(warframe_world, warframe_channel);
+                    }
                 }
             }
         });
