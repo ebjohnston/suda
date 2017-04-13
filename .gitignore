@@ -4,6 +4,9 @@ node_modules/
 # Auth file (sensitive data)
 settings.json
 
+# WebStorm IDE
+.idea/
+
 # data folders
 images/
 music/
