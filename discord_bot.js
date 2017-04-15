@@ -1,6 +1,7 @@
 // import dependent modules
 const Discord = require("discord.js");
-const Warframe = require ("./warframe.js");
+const padEnd = require("string.prototype.padend");
+const warframe = require ("./warframe.js");
 
 // initialize imported modules
 const bot = new Discord.Client();
@@ -28,13 +29,32 @@ const doWarframe = settings.enableWarframe;
 */
 
 var commands = {
-    "ping": {
-        name: "ping",
-        description: "responds pong, useful for checking if bot is alive.",
-        help: "I'll reply to your ping with pong. This way you can see if I'm still able to take commands.",
-        suffix: false,
+    "help": {
+        name: "help",
+        description: "gets info for all bot commands",
+        help: "use to get information about the usage and properties of different bot commands",
+        suffix: true,
+        usage: "[command]",
         process: (bot, msg, suffix) => {
-            msg.channel.sendMessage("pong");
+            if (suffix) {
+                sendCommandHelp(suffix, msg.channel);
+            }
+            else {
+                sendCommandList(msg.channel);
+            }
+        }
+    },
+    "img": {
+        name: "img",
+        description: "sends an image from the server directory",
+        help: "query ./images and post an image in chat if a match is found",
+        suffix: true,
+        usage: "[image name] -ext",
+        process: (bot, msg, suffix) => {
+            // msg.delete(); // warning: requires "Manage Messages" permission
+            // msg.channel.sendFile("./images/praise.gif");
+
+            msg.channel.sendMessage("img under construction. Sorry :c");
         }
     },
     "lenny": {
@@ -47,17 +67,13 @@ var commands = {
             msg.channel.sendMessage("( ° ͜ʖ ͡°)");
         }
     },
-    "img": {
-        name: "img",
-        description: "Send an image from the server directory",
-        help: "query ./images and post an image in chat if a match is found",
-        suffix: true,
-        usage: "[image name] -ext",
+    "ping": {
+        name: "ping",
+        description: "responds pong, useful for checking if bot is alive.",
+        help: "I'll reply to your ping with pong. This way you can see if I'm still able to take commands.",
+        suffix: false,
         process: (bot, msg, suffix) => {
-            // msg.delete(); // warning: requires "Manage Messages" permission
-            // msg.channel.sendFile("./images/praise.gif");
-
-            msg.channel.sendMessage("img under construction. Sorry :c");
+            msg.channel.sendMessage("pong");
         }
     }
 }
@@ -66,7 +82,7 @@ bot.on("ready", () => {
     console.log("I am ready!");
 
     if (doWarframe) {
-        Warframe.scrapeWarframe(bot);
+        warframe.scrapeWarframe(bot);
     }
 });
 
@@ -104,13 +120,10 @@ bot.on("message", msg => {
     // acknowledge that a message was received
     console.log("message received: " + msg);
 
-    var command_text = msg.content.split(" ")[0].substring(1).toLowerCase();
+    var command_text = msg.content.split(" ")[0].substring(prefix.length).toLowerCase();
     var suffix = msg.content.substring(command_text.length + 2); //add one for the ! and one for the space
 
-    var command = commands[command_text];
-    if (!command && doWarframe) {
-        var command = Warframe.commands[command_text];
-    }
+    var command = retrieveCommand(command_text).command;
 
     if (command) {
         command.process(bot, msg, suffix);
@@ -120,6 +133,65 @@ bot.on("message", msg => {
         }
     }
 });
+
+function retrieveCommand(predicate) {
+    var command = commands[predicate];
+    var source = "main";
+
+    if (!command && doWarframe && predicate.startsWith(settings.warframePrefix)) {
+        var command = warframe.commands[predicate.substring(settings.warframePrefix.length)];
+        var source = "warframe";
+    }
+
+    return { command, source };
+}
+
+function sendCommandList(channel) {
+    var message = "**Generic Commands**\n```";
+    for (var i in commands) {
+        message += prefix + commands[i].name.padEnd(10) + " | " + commands[i].description + "\n";
+    }
+    message += "```";
+    channel.sendMessage(message);
+
+    message = "**Warframe Commands**\n```";
+    for (var i in warframe.commands) {
+        message += prefix + settings.warframePrefix + warframe.commands[i].name.padEnd(10) + " | " +
+                    warframe.commands[i].description + "\n";
+    }
+    message += "```";
+    channel.sendMessage(message);
+}
+
+function sendCommandHelp(suffix, channel) {
+    info = retrieveCommand(suffix);
+    command = info.command;
+    source = info.source;
+
+    if (!command) {
+        channel.sendMessage("```I'm sorry, but I don't recognize that command. Please consult " + prefix + "help for a list of valid commands.```");
+    }
+    else {
+        var message = "Information for command: **" + command.name + "**\n```";
+
+        // include usage information
+        message += "Usage: " + prefix;
+        if (source === "warframe") {
+            message += settings.warframePrefix;
+        }
+        message += command.name;
+        if (command.suffix) {
+            message += command.usage;
+        }
+
+        message += "\nDescription: " + command.help;
+        if (command.admin) {
+            message += "\nNote: This command is restricted to bot administrators";
+        }
+        message += "```";
+        channel.sendMessage(message);
+    }
+}
 
 // log in the bot
 bot.login(settings.discordToken);
