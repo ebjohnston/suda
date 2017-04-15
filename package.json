@@ -13,7 +13,8 @@
         "discord.js": "*",
         "warframe-worldstate-parser": "*",
         "request": "*",
-        "arraylist": "*"
+        "arraylist": "*",
+        "string.prototype.padend": "*"
     },
     "main": "discord_bot.js"
 }
