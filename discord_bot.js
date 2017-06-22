@@ -9,7 +9,7 @@ const bot = new Discord.Client();
 // configuration settings
 const settings = require("./settings.json");
 const prefix = settings.commandPrefix;
-const doWarframe = settings.enableWarframe;
+const doWarframe = settings.warframe.doWarframe;
 
 // logging utilities
 //const ChatLog = require("./runtime/logger.js").ChatLog;
@@ -54,7 +54,7 @@ var commands = {
             // msg.delete(); // warning: requires "Manage Messages" permission
             // msg.channel.sendFile("./images/praise.gif");
 
-            msg.channel.sendMessage("img under construction. Sorry :c");
+            msg.channel.send("img under construction. Sorry :c");
         }
     },
     "lenny": {
@@ -64,7 +64,7 @@ var commands = {
         suffix: false,
         process: (bot, msg, suffix) => {
             msg.delete(); // warning: requires "Manage Messages" permission
-            msg.channel.sendMessage("( ° ͜ʖ ͡°)");
+            msg.channel.send("( ° ͜ʖ ͡°)");
         }
     },
     "ping": {
@@ -73,7 +73,7 @@ var commands = {
         help: "I'll reply to your ping with pong. This way you can see if I'm still able to take commands.",
         suffix: false,
         process: (bot, msg, suffix) => {
-            msg.channel.sendMessage("pong");
+            msg.channel.send("pong");
         }
     }
 }
@@ -129,7 +129,7 @@ bot.on("message", msg => {
         command.process(bot, msg, suffix);
 
         if (!command.suffix && suffix) {
-            msg.channel.sendMessage("```Note: " + command.name + " takes no arguments```");
+            msg.channel.send("```Note: " + command.name + " takes no arguments```");
         }
     }
 });
@@ -138,8 +138,8 @@ function retrieveCommand(predicate) {
     var command = commands[predicate];
     var source = "main";
 
-    if (!command && doWarframe && predicate.startsWith(settings.warframePrefix)) {
-        var command = warframe.commands[predicate.substring(settings.warframePrefix.length)];
+    if (!command && doWarframe && predicate.startsWith(settings.warframe.prefix)) {
+        var command = warframe.commands[predicate.substring(settings.warframe.prefix.length)];
         var source = "warframe";
     }
 
@@ -152,15 +152,15 @@ function sendCommandList(channel) {
         message += prefix + commands[i].name.padEnd(10) + " | " + commands[i].description + "\n";
     }
     message += "```";
-    channel.sendMessage(message);
+    channel.send(message);
 
     message = "**Warframe Commands**\n```";
     for (var i in warframe.commands) {
-        message += prefix + settings.warframePrefix + warframe.commands[i].name.padEnd(10) + " | " +
+        message += prefix + settings.warframe.prefix + warframe.commands[i].name.padEnd(10) + " | " +
                     warframe.commands[i].description + "\n";
     }
     message += "```";
-    channel.sendMessage(message);
+    channel.send(message);
 }
 
 function sendCommandHelp(suffix, channel) {
@@ -169,7 +169,7 @@ function sendCommandHelp(suffix, channel) {
     source = info.source;
 
     if (!command) {
-        channel.sendMessage("```I'm sorry, but I don't recognize that command. Please consult " + prefix + "help for a list of valid commands.```");
+        channel.send("```I'm sorry, but I don't recognize that command. Please consult " + prefix + "help for a list of valid commands.```");
     }
     else {
         var message = "Information for command: **" + command.name + "**\n```";
@@ -177,7 +177,7 @@ function sendCommandHelp(suffix, channel) {
         // include usage information
         message += "Usage: " + prefix;
         if (source === "warframe") {
-            message += settings.warframePrefix;
+            message += settings.warframe.prefix;
         }
         message += command.name;
         if (command.suffix) {
@@ -189,7 +189,7 @@ function sendCommandHelp(suffix, channel) {
             message += "\nNote: This command is restricted to bot administrators";
         }
         message += "```";
-        channel.sendMessage(message);
+        channel.send(message);
     }
 }
 
