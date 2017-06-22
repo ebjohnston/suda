@@ -46,7 +46,7 @@ exports.commands = {
         suffix: false,
         process: (bot, msg, suffix) => {
             queryWarframe( () => {
-                msg.channel.sendMessage("```" + world.voidTrader.toString() + "```");
+                msg.channel.send("```" + world.voidTrader.toString() + "```");
             });
         }
     },
@@ -85,7 +85,7 @@ exports.commands = {
         suffix: false,
         process: (bot, msg, suffix) => {
             queryWarframe( () => {
-                msg.channel.sendMessage("```" + toSortieString(world.sortie) + "```");
+                msg.channel.send("```" + toSortieString(world.sortie) + "```");
             });
         }
     },
@@ -106,7 +106,7 @@ exports.commands = {
         suffix: true,
         usage: "[search term]",
         process: (bot, msg, suffix) => {
-            msg.channel.sendMessage("https://warframe.wikia.com/wiki/" + suffix.replace(/ /g, "_"));
+            msg.channel.send("https://warframe.wikia.com/wiki/" + suffix.replace(/ /g, "_"));
         }
     }
 }
@@ -114,7 +114,7 @@ exports.commands = {
 exports.scrapeWarframe = (bot) => {
     setInterval( () => {
         queryWarframe( () => {
-            var servers = settings.warframeServers;
+            var servers = settings.warframe.servers;
 
             for (var i in servers) {
                 var channel = bot.guilds.find("name", servers[i].server).channels.find("name", servers[i].channel);
@@ -182,36 +182,36 @@ function queryWarframeArray(type, channel, suffix) {
             for (var i in array) {
                 if (restriction(array[i])) {
                     if (type === "weekend bonuses") { // special case - override toString
-                        channel.sendMessage(toWeekendString(array[i]));
+                        channel.send(toWeekendString(array[i]));
                     }
                     else {
-                        channel.sendMessage("```" + array[i].toString() + "```");
+                        channel.send("```" + array[i].toString() + "```");
                     }
                     messageSent = true;
                 }
             }
 
             if (!messageSent) {
-                channel.sendMessage("```There are currently no " + type + " in Warframe " +
+                channel.send("```There are currently no " + type + " in Warframe " +
                                     "with the filter you selected.\n" +
                                     "Use the parameter -all to see all listings.```");
             }
         }
         else {
-            channel.sendMessage("```There are currently no " + type + " in Warframe.```");
+            channel.send("```There are currently no " + type + " in Warframe.```");
         }
     });
 }
 
 function processWarframe(world, channel) {
-    sendMessageOnce("alerts", world.alerts, channel, hasGoodItem);
-    sendMessageOnce("invasions", world.invasions, channel, hasGoodItem);
-    sendMessageOnce("news", world.news, channel, sameDay);
-    sendMessageOnce("weekends", world.globalUpgrades, channel, alwaysTrue);
+    sendOnce("alerts", world.alerts, channel, hasGoodItem);
+    sendOnce("invasions", world.invasions, channel, hasGoodItem);
+    sendOnce("news", world.news, channel, sameDay);
+    sendOnce("weekends", world.globalUpgrades, channel, alwaysTrue);
 }
 
 // NOTE: "news" has not yet been verified
-function sendMessageOnce(type, dataArray, channel, restriction) {
+function sendOnce(type, dataArray, channel, restriction) {
     var buffer = new arrayList;
     var id;
 
@@ -234,11 +234,11 @@ function sendMessageOnce(type, dataArray, channel, restriction) {
             switch (type) {
                 case "alerts":
                 case "invasions":
-                    channel.sendMessage("```" + data.toString() + "```"); break;
+                    channel.send("```" + data.toString() + "```"); break;
                 case "news":
-                    channel.sendMessage(data.link); break;
+                    channel.send(data.link); break;
                 case "weekends":
-                    channel.sendMessage(toWeekendString(data)); break;
+                    channel.send(toWeekendString(data)); break;
                 default:
                     console.log("Error: warframe - type not recognized when sending scraped message");
             }
