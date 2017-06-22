@@ -8,24 +8,25 @@ const bot = new Discord.Client();
 
 // configuration settings
 const settings = require("./settings.json");
-const prefix = settings.commandPrefix;
+const prefix = settings.prefix;
 const doWarframe = settings.warframe.doWarframe;
+const images = settings.images;
 
 // logging utilities
 //const ChatLog = require("./runtime/logger.js").ChatLog;
 //const Logger = require("./runtime/logger.js").Logger;
 
 /*
-    List of command properties
-    -name
-    -description
-    -suffix
-    -usage (NOTE: implied [No Parameters] if !suffix)
-    -help
-    -admin
-    -timeout (in seconds)
-    -warframe
-    -process (lambda)
+List of command properties
+-name
+-description
+-suffix
+-usage (NOTE: implied [No Parameters] if !suffix)
+-help
+-admin
+-timeout (in seconds)
+-warframe
+-process (lambda)
 */
 
 var commands = {
@@ -35,12 +36,12 @@ var commands = {
         help: "use to get information about the usage and properties of different bot commands",
         suffix: true,
         usage: "[command]",
-        process: (bot, msg, suffix) => {
+        process: (bot, message, suffix) => {
             if (suffix) {
-                sendCommandHelp(suffix, msg.channel);
+                sendCommandHelp(suffix, message.channel);
             }
             else {
-                sendCommandList(msg.channel);
+                sendCommandList(message.channel);
             }
         }
     },
@@ -49,12 +50,21 @@ var commands = {
         description: "sends an image from the server directory",
         help: "query ./images and post an image in chat if a match is found",
         suffix: true,
-        usage: "[image name] -ext",
-        process: (bot, msg, suffix) => {
-            // msg.delete(); // warning: requires "Manage Messages" permission
-            // msg.channel.sendFile("./images/praise.gif");
+        usage: "[image name (no ext)]",
+        process: (bot, message, suffix) => {
+            var fs = require("fs");
+            var path = require("path");
 
-            msg.channel.send("img under construction. Sorry :c");
+            fs.readdir(images.directory, function(error, contents) {
+                for (var i = 0; i < contents.length; i++) {
+                    for (var j = 0; j < images.extensions.length; j++) {
+                        if (path.extname(contents[i]) === images.extensions[j]) {
+                            //sends first extension match as only message
+                            message.channel.send({files: [images.directory + "/" + suffix + images.extensions[j]]});
+                        }
+                    }
+                }
+            });
         }
     },
     "lenny": {
@@ -62,9 +72,9 @@ var commands = {
         description: "( ͡° ͜ʖ ͡°)",
         help: "displays the Unicode emoticon ( ͡° ͜ʖ ͡°) in place of the command",
         suffix: false,
-        process: (bot, msg, suffix) => {
-            msg.delete(); // warning: requires "Manage Messages" permission
-            msg.channel.send("( ° ͜ʖ ͡°)");
+        process: (bot, message, suffix) => {
+            message.delete(); // warning: requires "Manage Messages" permission
+            message.channel.send("( ° ͜ʖ ͡°)");
         }
     },
     "ping": {
@@ -72,8 +82,8 @@ var commands = {
         description: "responds pong, useful for checking if bot is alive.",
         help: "I'll reply to your ping with pong. This way you can see if I'm still able to take commands.",
         suffix: false,
-        process: (bot, msg, suffix) => {
-            msg.channel.send("pong");
+        process: (bot, message, suffix) => {
+            message.channel.send("pong");
         }
     }
 }
@@ -101,37 +111,37 @@ This will work, so long as the bot isn"t overloaded or still busy.
 */
 
 // create an event listener for messages
-bot.on("message", msg => {
+bot.on("message", message => {
 
-/*
+    /*
     // log non-DM messages
-    if (settings.log_chat === true && msg.channel.server) {
-        var date = new Date();
-        var dateString = d.toUTCString();
-        ChatLog.log("info", dateString + ": " + msg.channel.server.name + ", " + msg.channel.name + ": " + msg.author.username + " said <" + msg + ">");
-    }
+    if (settings.log_chat === true && message.channel.server) {
+    var date = new Date();
+    var dateString = d.toUTCString();
+    ChatLog.log("info", dateString + ": " + message.channel.server.name + ", " + message.channel.name + ": " + message.author.username + " said <" + message + ">");
+}
 */
 
-    // prevent the bot from "echoing" itself and other bots and ignore messages without prefix
-    if (msg.author.bot || !msg.content.startsWith(prefix)) {
-        return;
+// prevent the bot from "echoing" itself and other bots and ignore messages without prefix
+if (message.author.bot || !message.content.startsWith(prefix)) {
+    return;
+}
+
+// acknowledge that a message was received
+console.log("message received: " + message);
+
+var command_text = message.content.split(" ")[0].substring(prefix.length).toLowerCase();
+var suffix = message.content.substring(command_text.length + settings.prefix.length + 1); //add prefix and space
+
+var command = retrieveCommand(command_text).command;
+
+if (command) {
+    command.process(bot, message, suffix);
+
+    if (!command.suffix && suffix) {
+        message.channel.send("```Note: " + command.name + " takes no arguments```");
     }
-
-    // acknowledge that a message was received
-    console.log("message received: " + msg);
-
-    var command_text = msg.content.split(" ")[0].substring(prefix.length).toLowerCase();
-    var suffix = msg.content.substring(command_text.length + 2); //add one for the ! and one for the space
-
-    var command = retrieveCommand(command_text).command;
-
-    if (command) {
-        command.process(bot, msg, suffix);
-
-        if (!command.suffix && suffix) {
-            msg.channel.send("```Note: " + command.name + " takes no arguments```");
-        }
-    }
+}
 });
 
 function retrieveCommand(predicate) {
@@ -157,7 +167,7 @@ function sendCommandList(channel) {
     message = "**Warframe Commands**\n```";
     for (var i in warframe.commands) {
         message += prefix + settings.warframe.prefix + warframe.commands[i].name.padEnd(10) + " | " +
-                    warframe.commands[i].description + "\n";
+        warframe.commands[i].description + "\n";
     }
     message += "```";
     channel.send(message);
