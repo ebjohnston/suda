@@ -1,5 +1,5 @@
-# dependencies
-node_modules/
+# dependencies - temporarily included
+# node_modules/
 
 # Auth file (sensitive data)
 settings.json
