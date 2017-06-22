@@ -25,8 +25,8 @@ exports.commands = {
         description: "shows whether any acolytes are active in Warframe",
         help: "scrapes current worldState.php from Warframe and returns all active acolytes",
         suffix: false,
-        process: (bot, msg, suffix) => {
-            queryWarframeArray("acolytes", msg.channel, suffix);
+        process: (bot, message, suffix) => {
+            queryWarframeArray("acolytes", message.channel, suffix);
         }
     },
     "alerts": {
@@ -35,8 +35,8 @@ exports.commands = {
         help: "scrapes current worldState.php from Warframe and returns all active alerts",
         suffix: true,
         usage: "[-all]",
-        process: (bot, msg, suffix) => {
-            queryWarframeArray("alerts", msg.channel, suffix);
+        process: (bot, message, suffix) => {
+            queryWarframeArray("alerts", message.channel, suffix);
         }
     },
     "baro": {
@@ -44,9 +44,9 @@ exports.commands = {
         description: "shows whether the Void Trader is active and his inventory if present",
         help: "scrapes current worldState.php from Warframe and returns Void Trader information",
         suffix: false,
-        process: (bot, msg, suffix) => {
+        process: (bot, message, suffix) => {
             queryWarframe( () => {
-                msg.channel.send("```" + world.voidTrader.toString() + "```");
+                message.channel.send("```" + world.voidTrader.toString() + "```");
             });
         }
     },
@@ -55,8 +55,8 @@ exports.commands = {
         description: "retrieve Darvo's daily deal",
         help: "scrapes current worldState.php from Warframe and returns all daily deals",
         suffix: false,
-        process: (bot, msg, suffix) => {
-            queryWarframeArray("daily deals", msg.channel, suffix);
+        process: (bot, message, suffix) => {
+            queryWarframeArray("daily deals", message.channel, suffix);
         }
     },
     "events": {
@@ -64,8 +64,8 @@ exports.commands = {
         description: "displays any active Warframe events",
         help: "scrapes current worldState.php from Warframe and returns all active events",
         suffix: false,
-        process: (bot, msg, suffix) => {
-            queryWarframeArray("events", msg.channel, suffix);
+        process: (bot, message, suffix) => {
+            queryWarframeArray("events", message.channel, suffix);
         }
     },
     "invasions": {
@@ -74,8 +74,8 @@ exports.commands = {
         help: "scrapes current worldState.php from Warframe and returns all active invasions",
         suffix: true,
         usage: "[-all]",
-        process: (bot, msg, suffix) => {
-            queryWarframeArray("invasions", msg.channel, suffix);
+        process: (bot, message, suffix) => {
+            queryWarframeArray("invasions", message.channel, suffix);
         }
     },
     "sortie": {
@@ -83,9 +83,9 @@ exports.commands = {
         description: "shows today's sortie in Warframe",
         help: "scrapes current worldState.php from Warframe and returns sortie information",
         suffix: false,
-        process: (bot, msg, suffix) => {
+        process: (bot, message, suffix) => {
             queryWarframe( () => {
-                msg.channel.send("```" + toSortieString(world.sortie) + "```");
+                message.channel.send("```" + toSortieString(world.sortie) + "```");
             });
         }
     },
@@ -94,8 +94,8 @@ exports.commands = {
         description: "shows if any bonus weekends are currently active",
         help: "scrapes current worldState.php from Warframe and returns all weekend bonuses",
         suffix: false,
-        process: (bot, msg, suffix) => {
-            queryWarframeArray("weekend bonuses", msg.channel, suffix);
+        process: (bot, message, suffix) => {
+            queryWarframeArray("weekend bonuses", message.channel, suffix);
         }
     },
     // TODO: make this not shit
@@ -105,8 +105,8 @@ exports.commands = {
         help: "inserts modified parameters into Warframe wikia url",
         suffix: true,
         usage: "[search term]",
-        process: (bot, msg, suffix) => {
-            msg.channel.send("https://warframe.wikia.com/wiki/" + suffix.replace(/ /g, "_"));
+        process: (bot, message, suffix) => {
+            message.channel.send("https://warframe.wikia.com/wiki/" + suffix.replace(/ /g, "_"));
         }
     }
 }
