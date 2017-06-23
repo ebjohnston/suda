@@ -10,7 +10,7 @@ padEnd.shim();
 
 // stores world state shared between methods
 var world;
-// used to eliminate repeated messages
+// prevents repeated messages
 var posted = {
     "alerts": new arrayList,
     "invasions": new arrayList,
@@ -26,7 +26,18 @@ exports.commands = {
         help: "scrapes current worldState.php from Warframe and returns all active acolytes",
         suffix: false,
         process: (bot, message, suffix) => {
-            queryWarframeArray("acolytes", message.channel, suffix);
+            queryWarframe( () => {
+                acolytes = world.persistentEnemies;
+
+                if (acolytes.length > 0) {
+                    for (var i in acolytes) {
+                        message.channel.send("```" + acolytes[i].toString() + "```");
+                    }
+                }
+                else {
+                    message.channel.send("```There are currently no acolytes active in Warframe.```");
+                }
+            });
         }
     },
     "alerts": {
@@ -36,11 +47,34 @@ exports.commands = {
         suffix: true,
         usage: "[-all]",
         process: (bot, message, suffix) => {
-            queryWarframeArray("alerts", message.channel, suffix);
+            queryWarframe( () => {
+                alerts = world.alerts;
+
+                if (alerts.length > 0) {
+                    var isSent = false; // checks to see if all messages were filtered
+                    for (var i in alerts) {
+                        if (suffix === "-all" || hasGoodItem(alerts[i]))
+                        {
+                            message.channel.send("```" + alerts[i].toString() + "```");
+                            isSent = true;
+                        }
+                    }
+
+                    if (!isSent) {
+                        message.channel.send("```There are currently no alerts in Warframe " +
+                                                "with the filter you selected.\n" +
+                                                "Use the parameter -all to see all listings.```");
+                    }
+                }
+                else {
+                    message.channel.send("```There are currently no active alerts in Warframe```");
+                }
+            });
         }
     },
     "baro": {
         name: "baro",
+        alias: [ "voidtrader" ],
         description: "shows whether the Void Trader is active and his inventory if present",
         help: "scrapes current worldState.php from Warframe and returns Void Trader information",
         suffix: false,
@@ -52,11 +86,23 @@ exports.commands = {
     },
     "darvo": {
         name: "darvo",
+        alias: [ "dailydeal" ],
         description: "retrieve Darvo's daily deal",
         help: "scrapes current worldState.php from Warframe and returns all daily deals",
         suffix: false,
         process: (bot, message, suffix) => {
-            queryWarframeArray("daily deals", message.channel, suffix);
+            queryWarframe( () => {
+                deals = world.dailyDeals;
+
+                if (deals.length > 0) {
+                    for (var i in deals) {
+                        message.channel.send("```" + deals[i].toString() + "```");
+                    }
+                }
+                else {
+                    message.channel.send("```There are currently no daily deals in Warframe```");
+                }
+            });
         }
     },
     "events": {
@@ -65,17 +111,51 @@ exports.commands = {
         help: "scrapes current worldState.php from Warframe and returns all active events",
         suffix: false,
         process: (bot, message, suffix) => {
-            queryWarframeArray("events", message.channel, suffix);
+            queryWarframe( () => {
+                events = world.events;
+
+                if (events.length > 0) {
+                    for (var i in events) {
+                        message.channel.send("```" + events[i].toString() + "```");
+                    }
+                }
+                else {
+                    message.channel.send("```There are currently no events in Warframe```");
+                }
+            });
         }
     },
     "invasions": {
         name: "invasions",
+        alias: [ "invasion" ],
         description: "shows all current invasions with decent loot (or otherwise)",
         help: "scrapes current worldState.php from Warframe and returns all active invasions",
         suffix: true,
         usage: "[-all]",
         process: (bot, message, suffix) => {
-            queryWarframeArray("invasions", message.channel, suffix);
+            queryWarframe( () => {
+                invasions = world.invasions;
+
+                if (invasions.length > 0) {
+                    var isSent = false; // checks to see if all messages were filtered
+                    for (var i in invasions) {
+                        if (suffix === "-all" || hasGoodItem(invasions[i]))
+                        {
+                            message.channel.send("```" + invasions[i].toString() + "```");
+                            isSent = true;
+                        }
+                    }
+
+                    if (!isSent) {
+                        message.channel.send("```There are currently no invasions in Warframe " +
+                                                "with the filter you selected.\n" +
+                                                "Use the parameter -all to see all listings.```");
+                    }
+                }
+                else {
+                    message.channel.send("```There are currently no active invasions in Warframe```");
+                }
+            });
         }
     },
     "sortie": {
@@ -95,7 +175,21 @@ exports.commands = {
         help: "scrapes current worldState.php from Warframe and returns all weekend bonuses",
         suffix: false,
         process: (bot, message, suffix) => {
-            queryWarframeArray("weekend bonuses", message.channel, suffix);
+            queryWarframe( () => {
+                weekends = world.globalUpgrades;
+
+                if (weekends.length > 0) {
+                    for (var i in weekends) {
+                        message.channel.send("**Warframe Bonus Weekend**```\n" +
+                                                "Upgrade Bonus: " + weekends[i].upgrade + "\n" +
+                                                "Start Date: "+ weekends[i].start.toString() + "\n" +
+                                                "End Date: " + weekends[i].end.toString() + "```";);
+                    }
+                }
+                else {
+                    message.channel.send("```There are currently no weekend bonuses in Warframe```");
+                }
+            });
         }
     },
     // TODO: make this not shit
@@ -138,67 +232,6 @@ function queryWarframe(instructions) {
             if (world) {
                 instructions();
             }
-        }
-    });
-}
-
-function queryWarframeArray(type, channel, suffix) {
-    queryWarframe( () => {
-        var array;
-        var restriction = alwaysTrue;
-        var syndicates;
-
-        switch (type) {
-            case "acolytes":
-                array = world.persistentEnemies;
-                break;
-            case "alerts":
-                array = world.alerts;
-                restriction = hasGoodItem;
-                break;
-            case "daily deals":
-                array = world.dailyDeals;
-                break;
-            case "events":
-                array = world.events;
-                break;
-            case "invasions":
-                array = world.invasions;
-                restriction = hasGoodItem;
-                break;
-            case "weekend bonuses":
-                array = world.globalUpgrades;
-                break;
-        }
-
-        // -all overrides restrictions
-        if (suffix === "-all") {
-            restriction = alwaysTrue;
-        }
-
-        if (array.length > 0) {
-            var messageSent = false;
-
-            for (var i in array) {
-                if (restriction(array[i])) {
-                    if (type === "weekend bonuses") { // special case - override toString
-                        channel.send(toWeekendString(array[i]));
-                    }
-                    else {
-                        channel.send("```" + array[i].toString() + "```");
-                    }
-                    messageSent = true;
-                }
-            }
-
-            if (!messageSent) {
-                channel.send("```There are currently no " + type + " in Warframe " +
-                                    "with the filter you selected.\n" +
-                                    "Use the parameter -all to see all listings.```");
-            }
-        }
-        else {
-            channel.send("```There are currently no " + type + " in Warframe.```");
         }
     });
 }
