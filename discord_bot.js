@@ -1,12 +1,12 @@
 // import dependent modules
-const Discord = require("discord.js");
+const discord = require("discord.js");
 const padEnd = require("string.prototype.padend");
 const warframe = require ("./warframe.js");
 const fs = require("fs");
 const path = require("path");
 
 // initialize imported modules
-const bot = new Discord.Client();
+const bot = new discord.Client();
 
 // configuration settings
 const settings = require("./settings.json");
@@ -27,7 +27,6 @@ List of command properties
 -help
 -admin
 -timeout (in seconds)
--warframe
 -process (lambda)
 */
 
@@ -125,7 +124,7 @@ bot.on("message", message => {
     var commandText = message.content.split(" ")[0].substring(prefix.length).toLowerCase();
 
     // remove prefix, command, and any spaces before suffix
-    var suffix = message.content.substring(settings.prefix.length + commandText.length).split(" ")[1];
+    var suffix = message.content.substring(prefix.length + commandText.length).split(" ")[1];
 
     var command = retrieveCommand(commandText, message).command;
 
@@ -148,8 +147,9 @@ function retrieveCommand(predicate, message) {
     }
 
     // check warframe commands
-    if (!command && doWarframe && predicate.startsWith(settings.warframe.prefix)) {
-        command = warframe.commands[predicate.substring(settings.warframe.prefix.length)];
+    var wfPrefix = settings.warframe.prefix;
+    if (!command && doWarframe && predicate.startsWith(wfPrefix)) {
+        command = warframe.commands[predicate.substring(wfPrefix.length)];
         if (command) {
             source = "warframe";
         }
