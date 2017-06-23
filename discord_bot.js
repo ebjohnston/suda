@@ -50,7 +50,7 @@ var commands = {
     "img": {
         name: "img",
         description: "sends an image from the server directory",
-        help: "query ./images and post an image in chat if a match is found",
+        help: "query ./images and posts the first match found. Can also be called with /[image name]",
         suffix: true,
         usage: "[image name (no ext)]",
         process: (bot, message, suffix) => {
@@ -59,7 +59,7 @@ var commands = {
                     if (contents[i].startsWith(suffix)) {
                         for (var j in images.extensions) {
                             if (path.extname(contents[i]) === images.extensions[j]) {
-                                //sends first extension match as only message
+                                //sends first filename + extension match as only message
                                 message.channel.send({files: [images.directory + "/" + suffix + images.extensions[j]]});
                             }
                         }
@@ -156,8 +156,8 @@ function retrieveCommand(predicate, message) {
     }
 
     // attempt image directory alias
-    if (!command) {
-        var suffix = message.content.substring(settings.prefix.length);
+    if (!command && message) {
+        var suffix = message.content.substring(settings.prefix.length).split(" ")[0];
         commands["img"].process(bot, message, suffix);
     }
 
@@ -182,9 +182,14 @@ function sendCommandList(channel) {
 }
 
 function sendCommandHelp(suffix, channel) {
+    var command = null, source = null;
+
     info = retrieveCommand(suffix);
-    command = info.command;
-    source = info.source;
+
+    if (info) {
+        command = info.command;
+        source = info.source;
+    }
 
     if (!command) {
         channel.send("```I'm sorry, but I don't recognize that command. Please consult " + prefix + "help for a list of valid commands.```");
@@ -199,7 +204,7 @@ function sendCommandHelp(suffix, channel) {
         }
         message += command.name;
         if (command.suffix) {
-            message += command.usage;
+            message += " " + command.usage;
         }
 
         message += "\nDescription: " + command.help;
@@ -211,25 +216,5 @@ function sendCommandHelp(suffix, channel) {
     }
 }
 
-function searchImages(filename) {
-    fs.readdir(images.directory, function(error, contents) {
-        // check filename
-        for (var i in contents) {
-            //if (contents[i].split(".")[0] === filename) {
-
-                // check extension
-                for (var j in images.extensions) {
-                    if (path.extname(contents[i]) === images.extensions[j]) {
-
-                        //returns only first match of filename + extension
-                        return images.directory + "/" + filename + images.extensions[j];
-                    }
-                }
-            //}
-        }
-        return null;
-    });
-}
-
 // log in the bot
-bot.login(settings.discordToken);
+bot.login(settings.token);
