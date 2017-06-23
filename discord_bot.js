@@ -2,6 +2,8 @@
 const Discord = require("discord.js");
 const padEnd = require("string.prototype.padend");
 const warframe = require ("./warframe.js");
+const fs = require("fs");
+const path = require("path");
 
 // initialize imported modules
 const bot = new Discord.Client();
@@ -52,15 +54,14 @@ var commands = {
         suffix: true,
         usage: "[image name (no ext)]",
         process: (bot, message, suffix) => {
-            var fs = require("fs");
-            var path = require("path");
-
-            fs.readdir(images.directory, function(error, contents) {
-                for (var i = 0; i < contents.length; i++) {
-                    for (var j = 0; j < images.extensions.length; j++) {
-                        if (path.extname(contents[i]) === images.extensions[j]) {
-                            //sends first extension match as only message
-                            message.channel.send({files: [images.directory + "/" + suffix + images.extensions[j]]});
+            fs.readdir(images.directory, (error, contents) => {
+                for (var i in contents) {
+                    if (contents[i].startsWith(suffix)) {
+                        for (var j in images.extensions) {
+                            if (path.extname(contents[i]) === images.extensions[j]) {
+                                //sends first extension match as only message
+                                message.channel.send({files: [images.directory + "/" + suffix + images.extensions[j]]});
+                            }
                         }
                     }
                 }
@@ -113,44 +114,51 @@ This will work, so long as the bot isn"t overloaded or still busy.
 // create an event listener for messages
 bot.on("message", message => {
 
-    /*
-    // log non-DM messages
-    if (settings.log_chat === true && message.channel.server) {
-    var date = new Date();
-    var dateString = d.toUTCString();
-    ChatLog.log("info", dateString + ": " + message.channel.server.name + ", " + message.channel.name + ": " + message.author.username + " said <" + message + ">");
-}
-*/
-
-// prevent the bot from "echoing" itself and other bots and ignore messages without prefix
-if (message.author.bot || !message.content.startsWith(prefix)) {
-    return;
-}
-
-// acknowledge that a message was received
-console.log("message received: " + message);
-
-var command_text = message.content.split(" ")[0].substring(prefix.length).toLowerCase();
-var suffix = message.content.substring(command_text.length + settings.prefix.length + 1); //add prefix and space
-
-var command = retrieveCommand(command_text).command;
-
-if (command) {
-    command.process(bot, message, suffix);
-
-    if (!command.suffix && suffix) {
-        message.channel.send("```Note: " + command.name + " takes no arguments```");
+    // prevent the bot from "echoing" itself and other bots and ignore messages without prefix
+    if (message.author.bot || !message.content.startsWith(prefix)) {
+        return;
     }
-}
+
+    // acknowledge that a message was received
+    console.log("message received: " + message);
+
+    var commandText = message.content.split(" ")[0].substring(prefix.length).toLowerCase();
+
+    // remove prefix, command, and any spaces before suffix
+    var suffix = message.content.substring(settings.prefix.length + commandText.length).split(" ")[1];
+
+    var command = retrieveCommand(commandText, message).command;
+
+    if (command) {
+        command.process(bot, message, suffix);
+
+        if (!command.suffix && suffix) {
+            message.channel.send("```Note: " + command.name + " takes no arguments```");
+        }
+    }
 });
 
-function retrieveCommand(predicate) {
-    var command = commands[predicate];
-    var source = "main";
+function retrieveCommand(predicate, message) {
+    var command = null, source = null;
 
+    // check core commands
+    command = commands[predicate];
+    if (command) {
+        source = "main";
+    }
+
+    // check warframe commands
     if (!command && doWarframe && predicate.startsWith(settings.warframe.prefix)) {
-        var command = warframe.commands[predicate.substring(settings.warframe.prefix.length)];
-        var source = "warframe";
+        command = warframe.commands[predicate.substring(settings.warframe.prefix.length)];
+        if (command) {
+            source = "warframe";
+        }
+    }
+
+    // attempt image directory alias
+    if (!command) {
+        var suffix = message.content.substring(settings.prefix.length);
+        commands["img"].process(bot, message, suffix);
     }
 
     return { command, source };
@@ -201,6 +209,26 @@ function sendCommandHelp(suffix, channel) {
         message += "```";
         channel.send(message);
     }
+}
+
+function searchImages(filename) {
+    fs.readdir(images.directory, function(error, contents) {
+        // check filename
+        for (var i in contents) {
+            //if (contents[i].split(".")[0] === filename) {
+
+                // check extension
+                for (var j in images.extensions) {
+                    if (path.extname(contents[i]) === images.extensions[j]) {
+
+                        //returns only first match of filename + extension
+                        return images.directory + "/" + filename + images.extensions[j];
+                    }
+                }
+            //}
+        }
+        return null;
+    });
 }
 
 // log in the bot
