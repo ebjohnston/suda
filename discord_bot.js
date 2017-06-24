@@ -4,6 +4,7 @@ const padEnd = require("string.prototype.padend");
 const warframe = require ("./warframe.js");
 const fs = require("fs");
 const path = require("path");
+const pm2 = require("pm2");
 
 // initialize imported modules
 const bot = new discord.Client();
