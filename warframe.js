@@ -215,7 +215,7 @@ exports.scrapeWarframe = (bot) => {
                 }
             }
         });
-    }, SCRAPE_REFRESH_RATE * 1000);
+    }, refresh * 1000);
 }
 
 function queryWarframe(instructions) {
