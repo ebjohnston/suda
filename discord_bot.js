@@ -123,7 +123,7 @@ bot.on("message", message => {
 
     var commandText = message.content.split(" ")[0].substring(prefix.length).toLowerCase();
 
-    // remove prefix, command, and any spaces before suffix
+    // remove prefix, command, and any spaces before suffix (only first word)
     var suffix = message.content.substring(prefix.length + commandText.length).split(" ")[1];
 
     var command = retrieveCommand(commandText, message).command;

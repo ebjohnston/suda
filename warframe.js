@@ -4,19 +4,21 @@ const padEnd = require("string.prototype.padend");
 const warframeWorldState = require("warframe-worldstate-parser");
 
 const settings = require("./settings.json");
+// how often the bot scrapes world.php in seconds
+const refresh = settings.warframe.refresh;
 
 // allows appending padEnd to strings
 padEnd.shim();
 
-// stores world state shared between methods
-var world;
-// prevents repeated messages
-var posted = {
+// globals used for inter-method communication
+var world;          // stores world.php scraped from warframe website
+var posted = {      // prevents repeated messages
     "alerts": new arrayList,
     "invasions": new arrayList,
     "news": new arrayList,
     "weekends": new arrayList
 }
+var id;             // stores id of current event being sent / filtered
 
 // see discord_bot.js for command parameter descriptions
 exports.commands = {
@@ -28,7 +30,6 @@ exports.commands = {
         process: (bot, message, suffix) => {
             queryWarframe( () => {
                 acolytes = world.persistentEnemies;
-
                 if (acolytes.length > 0) {
                     for (var i in acolytes) {
                         message.channel.send("```" + acolytes[i].toString() + "```");
@@ -49,7 +50,6 @@ exports.commands = {
         process: (bot, message, suffix) => {
             queryWarframe( () => {
                 alerts = world.alerts;
-
                 if (alerts.length > 0) {
                     var isSent = false; // checks to see if all messages were filtered
                     for (var i in alerts) {
@@ -59,7 +59,6 @@ exports.commands = {
                             isSent = true;
                         }
                     }
-
                     if (!isSent) {
                         message.channel.send("```There are currently no alerts in Warframe " +
                                                 "with the filter you selected.\n" +
@@ -93,7 +92,6 @@ exports.commands = {
         process: (bot, message, suffix) => {
             queryWarframe( () => {
                 deals = world.dailyDeals;
-
                 if (deals.length > 0) {
                     for (var i in deals) {
                         message.channel.send("```" + deals[i].toString() + "```");
@@ -113,7 +111,6 @@ exports.commands = {
         process: (bot, message, suffix) => {
             queryWarframe( () => {
                 events = world.events;
-
                 if (events.length > 0) {
                     for (var i in events) {
                         message.channel.send("```" + events[i].toString() + "```");
@@ -135,7 +132,6 @@ exports.commands = {
         process: (bot, message, suffix) => {
             queryWarframe( () => {
                 invasions = world.invasions;
-
                 if (invasions.length > 0) {
                     var isSent = false; // checks to see if all messages were filtered
                     for (var i in invasions) {
@@ -145,7 +141,6 @@ exports.commands = {
                             isSent = true;
                         }
                     }
-
                     if (!isSent) {
                         message.channel.send("```There are currently no invasions in Warframe " +
                                                 "with the filter you selected.\n" +
@@ -177,13 +172,12 @@ exports.commands = {
         process: (bot, message, suffix) => {
             queryWarframe( () => {
                 weekends = world.globalUpgrades;
-
                 if (weekends.length > 0) {
                     for (var i in weekends) {
                         message.channel.send("**Warframe Bonus Weekend**```\n" +
                                                 "Upgrade Bonus: " + weekends[i].upgrade + "\n" +
                                                 "Start Date: "+ weekends[i].start.toString() + "\n" +
-                                                "End Date: " + weekends[i].end.toString() + "```";);
+                                                "End Date: " + weekends[i].end.toString() + "```");
                     }
                 }
                 else {
@@ -211,14 +205,17 @@ exports.scrapeWarframe = (bot) => {
             var servers = settings.warframe.servers;
 
             for (var i in servers) {
-                var channel = bot.guilds.find("name", servers[i].server).channels.find("name", servers[i].channel);
+                var channel, server = bot.guilds.find("name", servers[i].server);
+                if (server) {
+                    channel = server.channels.find("name", servers[i].channel);
+                }
 
                 if (world && channel) {
-                    processWarframe(world, channel);
+                    sendPassiveWarframe(world, channel);
                 }
             }
         });
-    }, 60 * 1000);
+    }, SCRAPE_REFRESH_RATE * 1000);
 }
 
 function queryWarframe(instructions) {
@@ -236,84 +233,69 @@ function queryWarframe(instructions) {
     });
 }
 
-function processWarframe(world, channel) {
-    sendOnce("alerts", world.alerts, channel, hasGoodItem);
-    sendOnce("invasions", world.invasions, channel, hasGoodItem);
-    sendOnce("news", world.news, channel, sameDay);
-    sendOnce("weekends", world.globalUpgrades, channel, alwaysTrue);
+function sendPassiveWarframe(world, channel) {
+    sendOnce("alerts", world.alerts, (alert) => {
+        id = alert.id;
+        if (!posted["alerts"].contains(id) && hasGoodItem(alert)) {
+            channel.send("```" + alert.toString() + "```");
+            posted["alerts"].add(id);
+        }
+    });
+    sendOnce("invasions", world.invasions, (invasion) => {
+        id = invasion.node;
+        if (!posted["invasions"].contains(id) && hasGoodItem(invasion)) {
+            channel.send("```" + invasion.toString() + "```");
+            posted["invasions"].add(id);
+        }
+    });
+    sendOnce("news", world.news, (news) => {
+        id = news.id;
+        if (!posted["news"].contains(id) && isSameDay(news)) {
+            channel.send(news.link);
+            posted["news"].add(id);
+        }
+    });
+    sendOnce("weekends", world.globalUpgrades, (bonus) => {
+        id = bonus.upgrade;
+        if (!posted["weekends"].contains(id)) {
+            channel.send(toWeekendString(bonus));
+            posted["weekends"].add(id);
+        }
+    });
 }
 
-// NOTE: "news" has not yet been verified
-function sendOnce(type, dataArray, channel, restriction) {
+function sendOnce(type, dataArray, sendMessage) {
     var buffer = new arrayList;
-    var id;
 
     for (var i in dataArray) {
         data = dataArray[i];
+        sendMessage(data);
 
-        switch (type) {
-            case "alerts":
-            case "news":
-                id = data.id; break;
-            case "invasions":
-                id = data.node; break;
-            case "weekends":
-                id = data.upgrade; break;
-            default:
-                console.log("Error: warframe - type not recognized when parsing id");
-        }
-
-        if (!posted[type].contains(id) && restriction(data)) {
-            switch (type) {
-                case "alerts":
-                case "invasions":
-                    channel.send("```" + data.toString() + "```"); break;
-                case "news":
-                    channel.send(data.link); break;
-                case "weekends":
-                    channel.send(toWeekendString(data)); break;
-                default:
-                    console.log("Error: warframe - type not recognized when sending scraped message");
-            }
-            posted[type].add(id);
-        }
         // add to list of current events even if not posted
         buffer.add(id);
     }
-    // cleanse posted once an event expires
+    // cleanse posted array once an event expires
     posted[type] = posted[type].intersection(buffer);
 }
 
 // TODO: add custom item matching
 function hasGoodItem(event) {
-    if (event.attackerReward) { // use this one for invasions
-        var items = /Nitain|Forma|Catalyst|Reactor|Exilus|Kubrow|Kavat|Vandal|Wraith/;
+    var items = /nitain|forma|catalyst|reactor|exilus|kubrow|kavat|vandal|wraith/;
+    rewards = event.getRewardTypes();
 
-        rewards = event.toString();
-        return items.test(rewards);
-    }
-    else { // use this one for alerts
-        var items = /nitain|forma|catalyst|reactor|exilus|kubrow|kavat|vandal|wraith/;
-
-        rewards = event.getRewardTypes();
-        for (var i in rewards) {
-            if (items.test(rewards[i])) {
-                return true;
-            }
+    for (var i in rewards) {
+        if (items.test(rewards[i])) {
+            return true;
         }
-        return false;
     }
+    return false;
 }
 
-function sameDay(event) {
+function isSameDay(event) {
     today = new Date();
 
     return today.getDate() === event.date.getDate() &&
             today.getMonth() === event.date.getMonth();
-}
-
-function alwaysTrue(event) {
-    return true;
 }
 
 function toSortieString(sortie) {
