@@ -54,18 +54,30 @@ var commands = {
         suffix: true,
         usage: "[image name (no ext)]",
         process: (bot, message, suffix) => {
-            fs.readdir(images.directory, (error, contents) => {
-                for (var i in contents) {
-                    if (contents[i].startsWith(suffix)) {
-                        for (var j in images.extensions) {
-                            if (path.extname(contents[i]) === images.extensions[j]) {
-                                //sends first filename + extension match as only message
-                                message.channel.send({files: [images.directory + "/" + suffix + images.extensions[j]]});
-                            }
-                        }
-                    }
-                }
-            });
+            var contents = fs.readdirSync(images.directory);
+
+            for (var i in contents) {
+               if (contents[i].startsWith(suffix)) {
+                   for (var j in images.extensions) {
+                       if (path.extname(contents[i]) === images.extensions[j]) {
+                           //sends first filename + extension match as only message
+                           message.channel.send({files: [images.directory + "/" + suffix + images.extensions[j]]});
+                       }
+                   }
+               }
+           }
+            // fs.readdir(images.directory, (error, contents) => {
+            //     for (var i in contents) {
+            //         if (contents[i].startsWith(suffix)) {
+            //             for (var j in images.extensions) {
+            //                 if (path.extname(contents[i]) === images.extensions[j]) {
+            //                     //sends first filename + extension match as only message
+            //                     message.channel.send({files: [images.directory + "/" + suffix + images.extensions[j]]});
+            //                 }
+            //             }
+            //         }
+            //     }
+            // });
         }
     },
     "lenny": {
@@ -205,16 +217,51 @@ function sendCommandHelp(suffix, channel) {
         }
         message += command.name;
         if (command.suffix) {
-            message += " " + command.usage;
+            message += " " + command.usage + "\n";
         }
 
-        message += "\nDescription: " + command.help;
+        if (command === commands["img"]) {
+            message += "Available images: ";
+
+            var contents = fs.readdirSync(images.directory);
+            for (var i in contents) {
+                base = path.basename(contents[i]);
+                extension = path.extname(contents[i]);
+
+                imagename = base.substring(0, base.length - extension.length);
+                message += imagename + ", ";
+            }
+            message = message.substring(0, message.length - 2); // remove last ", "
+            message += "\n";
+        }
+
+        message += "Description: " + command.help;
         if (command.admin) {
             message += "\nNote: This command is restricted to bot administrators";
         }
         message += "```";
         channel.send(message);
     }
+}
+
+function getImageList(callback) {
+    fs.readdir(images.directory, (error, contents) => {
+        var msgBuffer;
+
+        for (var i in contents) {
+            base = path.basename(contents[i]);
+            extension = path.extname(contents[i]);
+
+            imagename = base.substring(0, base.length - extension.length);
+            msgBuffer += imagename + ", ";
+            msgBuffer += base + ", ";
+        }
+        msgBuffer = msgBuffer.substring(0, msgBuffer.length - 3); // remove last ", "
+        msgBuffer += "\n";
+
+        message += msgBuffer;
+        callback(msgBuffer);
+    });
 }
 
 // log in the bot
