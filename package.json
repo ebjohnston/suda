@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ebjohnston/Suda.git"
+    "url": "git+https://github.com/ebjohnston/suda.git"
   },
   "keywords": [
     "discord",
@@ -29,7 +29,7 @@
   "author": "Ethan Johnston",
   "license": "\tISC",
   "bugs": {
-    "url": "https://github.com/ebjohnston/Suda/issues"
+    "url": "https://github.com/ebjohnston/suda/issues"
   },
-  "homepage": "https://github.com/ebjohnston/Suda#readme"
+  "homepage": "https://github.com/ebjohnston/suda#readme"
 }

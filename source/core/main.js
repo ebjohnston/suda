@@ -1,23 +1,27 @@
-// import dependent modules
-const discord = require("discord.js");
-const padEnd = require("string.prototype.padend");
-const warframe = require ("./warframe.js");
-const fs = require("fs");
-const path = require("path");
-const pm2 = require("pm2");
+//import dependent modules
+var discord = require("discord.js");
+var fs = require("fs");
+var path = require("path");
+var pm2 = require("pm2");
+var padEnd = require("string.prototype.padend");
+padEnd.shim();  // allows appending padEnd to strings
 
-// initialize imported modules
-const bot = new discord.Client();
+// import source files
+var warframe = require ("../warframe/warframe.js");
 
 // configuration settings
-const settings = require("./settings.json");
-const prefix = settings.prefix;
-const doWarframe = settings.warframe.doWarframe;
-const images = settings.images;
+var settings = require("../../settings.json");
+var prefix = settings.prefix;
+var doWarframe = settings.warframe.doWarframe;
+var images = settings.images;
+images.directory = "../." + images.directory; //allows .directory to be from root
+
+// initialize imported modules
+var bot = new discord.Client();
 
 // logging utilities
-//const ChatLog = require("./runtime/logger.js").ChatLog;
-//const Logger = require("./runtime/logger.js").Logger;
+//var ChatLog = require("./runtime/logger.js").ChatLog;
+//var Logger = require("./runtime/logger.js").Logger;
 
 /*
 List of command properties
@@ -40,10 +44,72 @@ var commands = {
         usage: "[command]",
         process: (bot, message, suffix) => {
             if (suffix) {
-                sendCommandHelp(suffix, message.channel);
+                //sendCommandHelp(suffix, message.channel);
+                var command = null, source = null;
+
+                info = retrieveCommand(suffix);
+
+                if (!info) {
+                    message.channel.send("```I'm sorry, but I don't recognize that command. " +
+                        "Please consult " + prefix + "help for a list of valid commands.```");
+                }
+                else {
+                    command = info.command;
+                    source = info.source;
+
+                    var response = "Information for command: **" + command.name + "**\n```";
+
+                    // include usage information
+                    response += "Usage: " + prefix;
+                    if (source === "warframe") {
+                        response += settings.warframe.prefix;
+                    }
+                    response += command.name;
+                    if (command.suffix) {
+                        response += " " + command.usage + "\n";
+                    }
+
+                    if (command === commands["img"]) {
+                        response += "Available images: ";
+
+                        var contents = fs.readdirSync(images.directory);
+                        for (var i in contents) {
+                            base = path.basename(contents[i]);
+                            extension = path.extname(contents[i]);
+
+                            imagename = base.substring(0, base.length - extension.length);
+                            response += imagename + ", ";
+                        }
+                        response = response.substring(0, response.length - 2); // remove last ", "
+                        response += "\n";
+                    }
+
+                    response += "Description: " + command.help;
+                    if (command.admin) {
+                        response += "\nNote: This command is restricted to bot administrators";
+                    }
+                    response += "```";
+                    message.channel.send(response);
+                }
             }
             else {
-                sendCommandList(message.channel);
+                //sendCommandList(message.channel);
+                var response = "**Generic Commands**\n```";
+                for (var i in commands) {
+                    response += prefix + commands[i].name.padEnd(10) + " | " + commands[i].description + "\n";
+                }
+                response += "```";
+                message.channel.send(response);
+
+                if(doWarframe) {
+                    response = "**Warframe Commands**\n```";
+                    for (var i in warframe.commands) {
+                        response += prefix + settings.warframe.prefix + warframe.commands[i].name.padEnd(10) +
+                            " | " + warframe.commands[i].description + "\n";
+                    }
+                    response += "```";
+                    message.channel.send(response);
+                }
             }
         }
     },
@@ -66,18 +132,6 @@ var commands = {
                    }
                }
            }
-            // fs.readdir(images.directory, (error, contents) => {
-            //     for (var i in contents) {
-            //         if (contents[i].startsWith(suffix)) {
-            //             for (var j in images.extensions) {
-            //                 if (path.extname(contents[i]) === images.extensions[j]) {
-            //                     //sends first filename + extension match as only message
-            //                     message.channel.send({files: [images.directory + "/" + suffix + images.extensions[j]]});
-            //                 }
-            //             }
-            //         }
-            //     }
-            // });
         }
     },
     "lenny": {
@@ -170,98 +224,11 @@ function retrieveCommand(predicate, message) {
 
     // attempt image directory alias
     if (!command && message) {
-        var suffix = message.content.substring(settings.prefix.length).split(" ")[0];
+        var suffix = message.content.substring(prefix.length).split(" ")[0];
         commands["img"].process(bot, message, suffix);
     }
 
     return { command, source };
-}
-
-function sendCommandList(channel) {
-    var message = "**Generic Commands**\n```";
-    for (var i in commands) {
-        message += prefix + commands[i].name.padEnd(10) + " | " + commands[i].description + "\n";
-    }
-    message += "```";
-    channel.send(message);
-
-    message = "**Warframe Commands**\n```";
-    for (var i in warframe.commands) {
-        message += prefix + settings.warframe.prefix + warframe.commands[i].name.padEnd(10) + " | " +
-        warframe.commands[i].description + "\n";
-    }
-    message += "```";
-    channel.send(message);
-}
-
-function sendCommandHelp(suffix, channel) {
-    var command = null, source = null;
-
-    info = retrieveCommand(suffix);
-
-    if (info) {
-        command = info.command;
-        source = info.source;
-    }
-
-    if (!command) {
-        channel.send("```I'm sorry, but I don't recognize that command. Please consult " + prefix + "help for a list of valid commands.```");
-    }
-    else {
-        var message = "Information for command: **" + command.name + "**\n```";
-
-        // include usage information
-        message += "Usage: " + prefix;
-        if (source === "warframe") {
-            message += settings.warframe.prefix;
-        }
-        message += command.name;
-        if (command.suffix) {
-            message += " " + command.usage + "\n";
-        }
-
-        if (command === commands["img"]) {
-            message += "Available images: ";
-
-            var contents = fs.readdirSync(images.directory);
-            for (var i in contents) {
-                base = path.basename(contents[i]);
-                extension = path.extname(contents[i]);
-
-                imagename = base.substring(0, base.length - extension.length);
-                message += imagename + ", ";
-            }
-            message = message.substring(0, message.length - 2); // remove last ", "
-            message += "\n";
-        }
-
-        message += "Description: " + command.help;
-        if (command.admin) {
-            message += "\nNote: This command is restricted to bot administrators";
-        }
-        message += "```";
-        channel.send(message);
-    }
-}
-
-function getImageList(callback) {
-    fs.readdir(images.directory, (error, contents) => {
-        var msgBuffer;
-
-        for (var i in contents) {
-            base = path.basename(contents[i]);
-            extension = path.extname(contents[i]);
-
-            imagename = base.substring(0, base.length - extension.length);
-            msgBuffer += imagename + ", ";
-            msgBuffer += base + ", ";
-        }
-        msgBuffer = msgBuffer.substring(0, msgBuffer.length - 3); // remove last ", "
-        msgBuffer += "\n";
-
-        message += msgBuffer;
-        callback(msgBuffer);
-    });
 }
 
 // log in the bot

@@ -1,14 +1,11 @@
-const arrayList = require("arraylist");
-const request = require("request");
-const padEnd = require("string.prototype.padend");
-const warframeWorldState = require("warframe-worldstate-parser");
+//import dependent modules
+var arrayList = require("arraylist");
+var request = require("request");
+var padEnd = require("string.prototype.padend");
+var warframeParser = require("warframe-worldstate-parser");
 
-const settings = require("./settings.json");
-// how often the bot scrapes world.php in seconds
-const refresh = settings.warframe.refresh;
-
-// allows appending padEnd to strings
-padEnd.shim();
+// configuration settings
+var settings = require("../../settings.json");
 
 // globals used for inter-method communication
 var world;          // stores world.php scraped from warframe website
@@ -20,7 +17,7 @@ var posted = {      // prevents repeated messages
 }
 var id;             // stores id of current event being sent / filtered
 
-// see discord_bot.js for command parameter descriptions
+// see [current core commands location] for command parameter descriptions
 exports.commands = {
     "acolytes": {
         name: "acolytes",
@@ -215,7 +212,7 @@ exports.scrapeWarframe = (bot) => {
                 }
             }
         });
-    }, refresh * 1000);
+    }, settings.warframe.refresh * 1000);
 }
 
 function queryWarframe(instructions) {
@@ -224,7 +221,7 @@ function queryWarframe(instructions) {
             console.log("An error has occured: Warframe webpage not accessible");
         }
         else {
-            world = new warframeWorldState(body);
+            world = new warframeParser(body);
 
             if (world) {
                 instructions();

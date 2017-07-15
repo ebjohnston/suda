@@ -1,0 +1,27 @@
+{
+    NOTE: make sure to remove this line and all comments surrounded by "**"
+
+    "token": "[discord application token here]",
+    "prefix": "/", **can be of any length**
+    "images": {
+        "directory": "./images", **relative to "source/core"**
+        "extensions": [".jpg", ".jpeg", ".gif", ".png"]
+    },
+    "warframe": {
+        "doWarframe": true,
+        "refresh": 30, **how often it scrapes wf server in seconds**
+        "prefix": "", **optional, comes after normal prefix, leave "" if undesired**
+        "servers": [ **only used for passive, scraped data**
+            {
+                "server": "TestServ",
+                "id": 123123123123123123,
+                "channel": "botspam"
+            },
+            {
+                "server": "TeamServ",
+                "id": 456456456456456456,
+                "channel": "warframe"
+            }
+        ]
+    }
+}
