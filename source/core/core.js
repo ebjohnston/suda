@@ -7,7 +7,8 @@ var padEnd = require("string.prototype.padend");
 padEnd.shim();  // allows appending padEnd to strings
 
 // import source files
-var warframe = require ("../warframe/warframe.js");
+var warframe = require("../warframe/warframe.js");
+//var commands = require("./core.commands.js").commands;
 
 // configuration settings
 var settings = require("../../settings.json");
@@ -101,11 +102,11 @@ var commands = {
                 response += "```";
                 message.channel.send(response);
 
-                if(doWarframe) {
+                if (doWarframe) {
                     response = "**Warframe Commands**\n```";
                     for (var i in warframe.commands) {
                         response += prefix + settings.warframe.prefix + warframe.commands[i].name.padEnd(10) +
-                            " | " + warframe.commands[i].description + "\n";
+                        " | " + warframe.commands[i].description + "\n";
                     }
                     response += "```";
                     message.channel.send(response);
@@ -118,20 +119,23 @@ var commands = {
         description: "sends an image from the server directory",
         help: "query ./images and posts the first match found. Can also be called with /[image name]",
         suffix: true,
-        usage: "[image name (no ext)]",
+        usage: "[image name (no extension)]",
         process: (bot, message, suffix) => {
             var contents = fs.readdirSync(images.directory);
 
             for (var i in contents) {
-               if (contents[i].startsWith(suffix)) {
-                   for (var j in images.extensions) {
-                       if (path.extname(contents[i]) === images.extensions[j]) {
-                           //sends first filename + extension match as only message
-                           message.channel.send({files: [images.directory + "/" + suffix + images.extensions[j]]});
-                       }
-                   }
-               }
-           }
+                // remove extension
+                var name = contents[i].substring(0, contents[i].lastIndexOf('.'));
+
+                if (name === suffix) {
+                    for (var j in images.extensions) {
+                        if (path.extname(contents[i]) === images.extensions[j]) {
+                            //sends first filename + extension match as only message
+                            message.channel.send({files: [images.directory + "/" + contents[i]]});
+                        }
+                    }
+                }
+            }
         }
     },
     "lenny": {
@@ -188,6 +192,7 @@ bot.on("message", message => {
     // acknowledge that a message was received
     console.log("message received: " + message);
 
+    // store first word without prefix as lower-case command
     var commandText = message.content.split(" ")[0].substring(prefix.length).toLowerCase();
 
     // remove prefix, command, and any spaces before suffix (only first word)
@@ -208,10 +213,22 @@ function retrieveCommand(predicate, message) {
     var command = null, source = null;
 
     // check core commands
-    command = commands[predicate];
-    if (command) {
+    if (commands[predicate]) {
+        command = commands[predicate];
         source = "main";
     }
+    // else {
+    //     search:
+    //     for (var i in commands) {
+    //         if (i.alias) {
+    //             for (var j in i.alias) {
+    //                 if (j === predicate) {
+    //                     command = i;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     // check warframe commands
     var wfPrefix = settings.warframe.prefix;

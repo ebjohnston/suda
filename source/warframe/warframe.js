@@ -18,9 +18,10 @@ var posted = {      // prevents repeated messages
 var id;             // stores id of current event being sent / filtered
 
 // see [current core commands location] for command parameter descriptions
-exports.commands = {
+var commands = {
     "acolytes": {
         name: "acolytes",
+        alias: [ "acolyte" ],
         description: "shows whether any acolytes are active in Warframe",
         help: "scrapes current worldState.php from Warframe and returns all active acolytes",
         suffix: false,
@@ -196,7 +197,7 @@ exports.commands = {
     }
 }
 
-exports.scrapeWarframe = (bot) => {
+function scrapeWarframe(bot) {
     setInterval( () => {
         queryWarframe( () => {
             var servers = settings.warframe.servers;
@@ -322,3 +323,6 @@ function toWeekendString(weekend) {
             "Start Date: "+ weekend.start.toString() + "\n" +
             "End Date: " + weekend.end.toString() + "```";
 }
+
+exports.commands = commands;
+exports.scrapeWarframe = scrapeWarframe;
