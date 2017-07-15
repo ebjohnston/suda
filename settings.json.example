@@ -4,7 +4,7 @@
     "token": "[discord application token here]",
     "prefix": "/", **can be of any length**
     "images": {
-        "directory": "./images", **relative to "source/core"**
+        "directory": "./images", **relative to root directory**
         "extensions": [".jpg", ".jpeg", ".gif", ".png"]
     },
     "warframe": {
