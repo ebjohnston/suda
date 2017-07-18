@@ -33,6 +33,7 @@ derived in part from [DougleyBot](https://github.com/SteamingMutt/DougleyBot)
 - [ ] Add command aliasing
 - [ ] Allow multiple servers with the same names to be used
 - [ ] Rework help into an anonymous function call for each command (for additional information)
+- [ ] Allow more than one server to receive passive Warframe data
 
 ### Individual Commands
 - [ ] core/lenny: add contingency for when bot does not have "manage messages" permission
