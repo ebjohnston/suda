@@ -145,7 +145,7 @@ var commands = {
         suffix: false,
         process: (bot, message, suffix) => {
             message.delete(); // warning: requires "Manage Messages" permission
-            message.channel.send("( ° ͜ʖ ͡°)");
+            message.channel.send("( ͡° ͜ʖ ͡°)");
         }
     },
     "ping": {
