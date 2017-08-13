@@ -121,6 +121,8 @@ var commands = {
         suffix: true,
         usage: "[image name (no extension)]",
         process: (bot, message, suffix) => {
+            message.delete(); // warning: requires "Manage Messages" permission
+            
             var contents = fs.readdirSync(images.directory);
 
             for (var i in contents) {
