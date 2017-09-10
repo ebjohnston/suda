@@ -8,14 +8,21 @@ var warframeParser = require("warframe-worldstate-parser");
 var settings = require("../../settings.json");
 
 // globals used for inter-method communication
-var world;          // stores world.php scraped from warframe website
-var posted = {      // prevents repeated messages
-    "alerts": new arrayList,
-    "invasions": new arrayList,
-    "news": new arrayList,
-    "weekends": new arrayList
+var world;              // stores world.php scraped from warframe website
+var id;                 // stores id of current event being sent / filtered
+var serverIndex = -1;   // stores the posted array index of the current server
+
+// nested array used to store messages that have been sent to avoid duplicates
+const SERVER_COUNT = settings.warframe.servers.length;
+var sent = [];
+for (var i = 0; i < SERVER_COUNT; i++) {
+    sent[i] = {
+        "alerts": new arrayList,
+        "invasions": new arrayList,
+        "news": new arrayList,
+        "weekends": new arrayList
+    }
 }
-var id;             // stores id of current event being sent / filtered
 
 // see [current core commands location] for command parameter descriptions
 var commands = {
@@ -203,9 +210,10 @@ function scrapeWarframe(bot) {
             var servers = settings.warframe.servers;
 
             for (var i in servers) {
-                var channel, server = bot.guilds.find("name", servers[i].server);
+                serverIndex = i;
+                var server = bot.guilds.find("name", servers[i].server);
                 if (server) {
-                    channel = server.channels.find("name", servers[i].channel);
+                    var channel = server.channels.find("name", servers[i].channel);
                 }
 
                 if (world && channel) {
@@ -232,6 +240,8 @@ function queryWarframe(instructions) {
 }
 
 function sendPassiveWarframe(world, channel) {
+    var posted = sent[serverIndex];     // array for this server iteration
+
     sendOnce("alerts", world.alerts, (alert) => {
         id = alert.id;
         if (!posted["alerts"].contains(id) && hasGoodItem(alert)) {
@@ -239,6 +249,7 @@ function sendPassiveWarframe(world, channel) {
             posted["alerts"].add(id);
         }
     });
+
     sendOnce("invasions", world.invasions, (invasion) => {
         id = invasion.node;
         if (!posted["invasions"].contains(id) && hasGoodItem(invasion)) {
@@ -246,6 +257,7 @@ function sendPassiveWarframe(world, channel) {
             posted["invasions"].add(id);
         }
     });
+
     sendOnce("news", world.news, (news) => {
         id = news.id;
         if (!posted["news"].contains(id) && isSameDay(news)) {
@@ -253,6 +265,7 @@ function sendPassiveWarframe(world, channel) {
             posted["news"].add(id);
         }
     });
+
     sendOnce("weekends", world.globalUpgrades, (bonus) => {
         id = bonus.upgrade;
         if (!posted["weekends"].contains(id)) {
@@ -273,7 +286,7 @@ function sendOnce(type, dataArray, sendMessage) {
         buffer.add(id);
     }
     // cleanse posted array once an event expires
-    posted[type] = posted[type].intersection(buffer);
+    sent[serverIndex][type] = sent[serverIndex][type].intersection(buffer);
 }
 
 // TODO: add custom item matching

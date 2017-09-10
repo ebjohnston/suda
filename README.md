@@ -33,7 +33,9 @@ derived in part from [DougleyBot](https://github.com/SteamingMutt/DougleyBot)
 - [ ] Add command aliasing
 - [ ] Allow multiple servers with the same names to be used
 - [ ] Rework help into an anonymous function call for each command (for additional information)
-- [ ] Allow more than one server to receive passive Warframe data
+- [x] Allow more than one server to receive passive Warframe data
+- [ ] Add restart / update commands
+- [ ] Allow adding new images from discord CLI
 
 ### Individual Commands
 - [ ] core/lenny: add contingency for when bot does not have "manage messages" permission
@@ -42,7 +44,7 @@ derived in part from [DougleyBot](https://github.com/SteamingMutt/DougleyBot)
 [none currently]
 
 ### Documentation
-- [ ] Add features seperated by category (core, warframe, music, etc.)
+- [ ] Add features separated by category (core, warframe, music, etc.)
 - [ ] Add installation / configuration instructions
     - [x] installation
     - [ ] configuration

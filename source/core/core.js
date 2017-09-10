@@ -13,7 +13,7 @@ var warframe = require("../warframe/warframe.js");
 // configuration settings
 var settings = require("../../settings.json");
 var prefix = settings.prefix;
-var doWarframe = settings.warframe.doWarframe;
+var doWarframe = settings.warframe.enable;
 var images = settings.images;
 images.directory = "../." + images.directory; //allows .directory to be from root
 
@@ -69,6 +69,9 @@ var commands = {
                     if (command.suffix) {
                         response += " " + command.usage + "\n";
                     }
+                    else {
+                        response += "\n";
+                    }
 
                     if (command === commands["img"]) {
                         response += "Available images: ";
@@ -122,7 +125,7 @@ var commands = {
         usage: "[image name (no extension)]",
         process: (bot, message, suffix) => {
             message.delete(); // warning: requires "Manage Messages" permission
-            
+
             var contents = fs.readdirSync(images.directory);
 
             for (var i in contents) {
@@ -219,18 +222,6 @@ function retrieveCommand(predicate, message) {
         command = commands[predicate];
         source = "main";
     }
-    // else {
-    //     search:
-    //     for (var i in commands) {
-    //         if (i.alias) {
-    //             for (var j in i.alias) {
-    //                 if (j === predicate) {
-    //                     command = i;
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 
     // check warframe commands
     var wfPrefix = settings.warframe.prefix;

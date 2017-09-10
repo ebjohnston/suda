@@ -8,7 +8,7 @@
         "extensions": [".jpg", ".jpeg", ".gif", ".png"]
     },
     "warframe": {
-        "doWarframe": true,
+        "enable": true,
         "refresh": 30, **how often it scrapes wf server in seconds**
         "prefix": "", **optional, comes after normal prefix, leave "" if undesired**
         "servers": [ **only used for passive, scraped data**
