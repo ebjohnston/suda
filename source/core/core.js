@@ -124,8 +124,6 @@ var commands = {
         suffix: true,
         usage: "[image name (no extension)]",
         process: (bot, message, suffix) => {
-            message.delete(); // warning: requires "Manage Messages" permission
-
             var contents = fs.readdirSync(images.directory);
 
             for (var i in contents) {
@@ -137,6 +135,7 @@ var commands = {
                         if (path.extname(contents[i]) === images.extensions[j]) {
                             //sends first filename + extension match as only message
                             message.channel.send({files: [images.directory + "/" + contents[i]]});
+                            message.delete(); // warning: requires "Manage Messages" permission
                         }
                     }
                 }
