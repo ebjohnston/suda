@@ -24,6 +24,7 @@ derived in part from [DougleyBot](https://github.com/SteamingMutt/DougleyBot)
 
 ## To-Do List
 ### Overall Functionality
+- [ ] Split News and Alerts message subscriptions
 - [ ] Compartmentalize (most) command operations within process()
 - [ ] Restructure messages to use Rich Embed
 - [ ] Add music bot functionality

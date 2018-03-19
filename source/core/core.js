@@ -58,42 +58,48 @@ var commands = {
                     command = info.command;
                     source = info.source;
 
-                    var response = "Information for command: **" + command.name + "**\n```";
-
-                    // include usage information
-                    response += "Usage: " + prefix;
-                    if (source === "warframe") {
-                        response += settings.warframe.prefix;
-                    }
-                    response += command.name;
-                    if (command.suffix) {
-                        response += " " + command.usage + "\n";
+                    if (!command || !source) {
+                        message.channel.send("```I'm sorry, but I don't recognize that command. " +
+                            "Please consult " + prefix + "help for a list of valid commands.```");
                     }
                     else {
-                        response += "\n";
-                    }
+                        var response = "Information for command: **" + command.name + "**\n```";
 
-                    if (command === commands["img"]) {
-                        response += "Available images: ";
-
-                        var contents = fs.readdirSync(images.directory);
-                        for (var i in contents) {
-                            base = path.basename(contents[i]);
-                            extension = path.extname(contents[i]);
-
-                            imagename = base.substring(0, base.length - extension.length);
-                            response += imagename + ", ";
+                        // include usage information
+                        response += "Usage: " + prefix;
+                        if (source === "warframe") {
+                            response += settings.warframe.prefix;
                         }
-                        response = response.substring(0, response.length - 2); // remove last ", "
-                        response += "\n";
-                    }
+                        response += command.name;
+                        if (command.suffix) {
+                            response += " " + command.usage + "\n";
+                        }
+                        else {
+                            response += "\n";
+                        }
 
-                    response += "Description: " + command.help;
-                    if (command.admin) {
-                        response += "\nNote: This command is restricted to bot administrators";
+                        if (command === commands["img"]) {
+                            response += "Available images: ";
+
+                            var contents = fs.readdirSync(images.directory);
+                            for (var i in contents) {
+                                base = path.basename(contents[i]);
+                                extension = path.extname(contents[i]);
+
+                                imagename = base.substring(0, base.length - extension.length);
+                                response += imagename + ", ";
+                            }
+                            response = response.substring(0, response.length - 2); // remove last ", "
+                            response += "\n";
+                        }
+
+                        response += "Description: " + command.help;
+                        if (command.admin) {
+                            response += "\nNote: This command is restricted to bot administrators";
+                        }
+                        response += "```";
+                        message.channel.send(response);
                     }
-                    response += "```";
-                    message.channel.send(response);
                 }
             }
             else {
