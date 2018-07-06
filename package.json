@@ -7,14 +7,18 @@
     "dependencies": {
         "arraylist": "^0.1.0",
         "discord.js": "^11.1.0",
-        "pm2": "^2.5.0",
         "request": "^2.81.0",
         "string.prototype.padend": "^3.0.0",
-        "warframe-worldstate-parser": "^1.7.6"
+        "warframe-worldstate-parser": "^1.7.6",
+        "cheerio": "^1.0.0-rc.2"
     },
-    "devDependencies": {},
+    "devDependencies": {
+        "pm2": "^2.5.0",
+        "standard": "^11.0.1"
+    },
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "standard",
+        "fix": "standard --fix"
     },
     "repository": {
         "type": "git",
