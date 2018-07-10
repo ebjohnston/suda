@@ -1,29 +1,20 @@
 // import dependent modules
-var discord = require('discord.js')
-var fs = require('fs')
-var path = require('path')
-var padEnd = require('string.prototype.padend')
+const discord = require('discord.js')
+const fs = require('fs')
+const path = require('path')
+const padEnd = require('string.prototype.padend')
 padEnd.shim() // allows appending padEnd to strings
-
-// var pm2 = require('pm2')
 
 // import source files
 var warframe = require('../warframe/warframe.js')
-// var commands = require("./core.commands.js").commands;
 
 // configuration settings
 var settings = require('../../settings.json')
-var prefix = settings.prefix
 var doWarframe = settings.warframe.enable
 var images = settings.images
-images.directory = '../.' + images.directory // allows .directory to be from root
 
 // initialize imported modules
 var bot = new discord.Client()
-
-// logging utilities
-// var ChatLog = require("./runtime/logger.js").ChatLog;
-// var Logger = require("./runtime/logger.js").Logger;
 
 /*
 List of command properties
@@ -54,19 +45,19 @@ var commands = {
 
         if (!info) {
           message.channel.send("```I'm sorry, but I don't recognize that command. " +
-                        'Please consult ' + prefix + 'help for a list of valid commands.```')
+                        'Please consult ' + settings.prefix + 'help for a list of valid commands.```')
         } else {
           command = info.command
           source = info.source
 
           if (!command || !source) {
             message.channel.send("```I'm sorry, but I don't recognize that command. " +
-                            'Please consult ' + prefix + 'help for a list of valid commands.```')
+                            'Please consult ' + settings.prefix + 'help for a list of valid commands.```')
           } else {
             let response = 'Information for command: **' + command.name + '**\n```'
 
             // include usage information
-            response += 'Usage: ' + prefix
+            response += 'Usage: ' + settings.prefix
             if (source === 'warframe') {
               response += settings.warframe.prefix
             }
@@ -104,7 +95,8 @@ var commands = {
         // sendCommandList(message.channel);
         let response = '**Generic Commands**\n```'
         for (let i in commands) {
-          response += prefix + commands[i].name.padEnd(10) + ' | ' + commands[i].description + '\n'
+          response += settings.prefix + commands[i].name.padEnd(10) + ' | ' +
+                      commands[i].description + '\n'
         }
         response += '```'
         message.channel.send(response)
@@ -112,7 +104,8 @@ var commands = {
         if (doWarframe) {
           response = '**Warframe Commands**\n```'
           for (let i in warframe.commands) {
-            response += prefix + settings.warframe.prefix + warframe.commands[i].name.padEnd(10) +
+            response += settings.prefix + settings.warframe.prefix +
+                        warframe.commands[i].name.padEnd(10) +
                         ' | ' + warframe.commands[i].description + '\n'
           }
           response += '```'
@@ -192,7 +185,7 @@ This will work, so long as the bot isn"t overloaded or still busy.
 // create an event listener for messages
 bot.on('message', message => {
   // prevent the bot from "echoing" itself and other bots and ignore messages without prefix
-  if (message.author.bot || !message.content.startsWith(prefix)) {
+  if (message.author.bot || !message.content.startsWith(settings.prefix)) {
     return
   }
 
@@ -200,10 +193,10 @@ bot.on('message', message => {
   console.log('message received: ' + message)
 
   // store first word without prefix as lower-case command
-  var commandText = message.content.split(' ')[0].substring(prefix.length).toLowerCase()
+  var commandText = message.content.split(' ')[0].substring(settings.prefix.length).toLowerCase()
 
   // remove prefix, command, and any spaces before suffix (only first word)
-  var suffix = message.content.substring(prefix.length + commandText.length).split(' ')[1]
+  var suffix = message.content.substring(settings.prefix.length + commandText.length).split(' ')[1]
 
   var command = retrieveCommand(commandText, message).command
 
@@ -237,7 +230,7 @@ function retrieveCommand (predicate, message) {
 
   // attempt image directory alias
   if (!command && message) {
-    var suffix = message.content.substring(prefix.length).split(' ')[0]
+    var suffix = message.content.substring(settings.prefix.length).split(' ')[0]
     commands['img'].process(bot, message, suffix)
   }
 
