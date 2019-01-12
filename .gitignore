@@ -1,8 +1,10 @@
-# dependencies - temporarily included
+# npm dependencies
 node_modules/
+package-lock.json
 
 # Auth file (sensitive data)
 settings.json
+testing.json
 
 # WebStorm IDE
 .idea/
@@ -14,3 +16,4 @@ logs/
 
 # additional files
 misc/
+test/

@@ -1,7 +1,7 @@
 const cheerio = require('cheerio')
 const request = require('request')
 
-var deals = []
+let deals = []
 
 request('https://www.pathofexile.com/shop/category/daily-deals', (err, response, body) => {
   if (err) {
@@ -16,9 +16,8 @@ request('https://www.pathofexile.com/shop/category/daily-deals', (err, response,
     deals[index]['price'] = $('.price', element).text()
     deals[index]['discount'] = $('.value', element).text()
 
-    var previewUrl = $('.video', element).attr('data-src')
-    var youtubeId = previewUrl.substring(24, previewUrl.indexOf('?'))
-    deals[index]['preview'] = youtubeId
+    let previewUrl = $('.video', element).attr('data-src')
+    deals[index]['preview'] = previewUrl.substring(24, previewUrl.indexOf('?'))
   })
 
   console.log('deals: ' + JSON.stringify(deals))

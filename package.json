@@ -6,18 +6,19 @@
   "readme": "README.md",
   "dependencies": {
     "arraylist": "^0.1.0",
-    "discord.js": "^11.1.0",
-    "request": "^2.81.0",
+    "cheerio": "^1.0.0-rc.2",
+    "discord.js": "^11.4.2",
+    "request": "^2.88.0",
     "string.prototype.padend": "^3.0.0",
-    "warframe-worldstate-parser": "^1.7.6",
-    "cheerio": "^1.0.0-rc.2"
+    "warframe-worldstate-parser": "^1.7.6"
   },
   "devDependencies": {
-    "pm2": "^3.0.0",
-    "standard": "^11.0.1"
+    "pm2": "^3.2.8",
+    "standard": "^11.0.1",
+    "discunit.js": "*"
   },
   "scripts": {
-    "start" : "npm install && node src/core/core.js",
+    "start": "npm install && node src/core/core.js",
     "test": "standard",
     "fix": "standard --fix"
   },
