@@ -1,6 +1,5 @@
 # Cephalon Suda
-Discord Bot utilizing discord.js  
-derived in part from [DougleyBot](https://github.com/SteamingMutt/DougleyBot)
+Discord Bot utilizing discord.js (v13)
 
 ## Installation
 1. Clone this repo
@@ -18,36 +17,32 @@ derived in part from [DougleyBot](https://github.com/SteamingMutt/DougleyBot)
 
 1. Start bot by navigating to core directory and initializing core.js
     ```
-    cd source/core
-    node core.js
+    cd src/core
+    node main.js
     ```
+
+## Feature List
+- Application command support (discord.js v13)
+- Modular and extensible code organization with flags for each module
+- A music bot which supports multiple input sources
+    - YouTube integration
+    - (Pending) Plex integration
 
 ## To-Do List
 ### Overall Functionality
-- [ ] Split News and Alerts message subscriptions
-- [ ] Compartmentalize (most) command operations within process()
-- [ ] Restructure messages to use Rich Embed
-- [ ] Add music bot functionality
+- [ ] Make sure app command deployment works with fresh server
 - [ ] Add basic logging tools
 - [ ] Add unit testing
-    - [ ] Add Travis integration for testing
-- [ ] Add command aliasing
-- [ ] Allow multiple servers with the same names to be used
-- [ ] Rework help into an anonymous function call for each command (for additional information)
-- [x] Allow more than one server to receive passive Warframe data
-- [ ] Add restart / update commands
-- [ ] Allow adding new images from discord CLI
+- [ ] Plex integration
+- [ ] Path of Exile integration
+    - [ ] PoE commands
+    - [ ] PoE subscriptions
 
 ### Individual Commands
-- [ ] core/lenny: add contingency for when bot does not have "manage messages" permission
-
-### Individual Methods
-[none currently]
+- [ ] core/img: Allow adding new images from discord CLI
 
 ### Documentation
-- [ ] Add features separated by category (core, warframe, music, etc.)
 - [ ] Add installation / configuration instructions
     - [x] installation
     - [ ] configuration
-- [x] Decide on and include a license for redistribution
 - [ ] Add badges for version / npm / testing / etc

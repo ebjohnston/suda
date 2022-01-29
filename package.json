@@ -5,17 +5,22 @@
   "main": "src/core/core.js",
   "readme": "README.md",
   "dependencies": {
+    "@discordjs/rest": "^0.3.0",
+    "@discordjs/voice": "^0.8.0",
     "arraylist": "^0.1.0",
     "cheerio": "^1.0.0-rc.2",
-    "discord.js": "^11.4.2",
+    "discord-api-types": "^0.26.1",
+    "discord.js": "^13.6.0",
     "request": "^2.88.0",
     "string.prototype.padend": "^3.0.0",
-    "warframe-worldstate-parser": "^1.7.6"
+    "warframe-worldstate-parser": "^1.7.6",
+    "youtube-dl-exec": "^2.0.2",
+    "ytdl-core": "^4.10.0"
   },
   "devDependencies": {
-    "pm2": "^3.2.8",
-    "standard": "^11.0.1",
-    "discunit.js": "*"
+    "discunit.js": "*",
+    "pm2": "^5.1.2",
+    "standard": "^16.0.4"
   },
   "scripts": {
     "start": "npm install && node src/core/core.js",

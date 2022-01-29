@@ -1,25 +1,8 @@
 {
   "token": "[discord application token here]",
-  "prefix": "/",
-  "images": {
-    "directory": "./images",
-    "extensions": [".jpg", ".jpeg", ".gif", ".png"]
-  },
-  "warframe": {
-    "enable": true,
-    "refresh": 30,
-    "prefix": "",
-    "servers": [
-      {
-        "server": "TestServ",
-        "id": 123123123123123123,
-        "channel": "botspam"
-      },
-      {
-        "server": "TeamServ",
-        "id": 456456456456456456,
-        "channel": "warframe"
-      }
-    ]
+  "modules": {
+    "music": true,
+    "pathofexile": true,
+    "plex": true
   }
 }
