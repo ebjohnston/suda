@@ -1,5 +1,10 @@
 const { ApplicationCommandOptionType } = require('discord-api-types/v9')
-const { entersState, joinVoiceChannel, VoiceConnectionStatus } = require('@discordjs/voice')
+const { 
+    AudioPlayerStatus,
+    VoiceConnectionStatus,
+    entersState,
+    joinVoiceChannel
+ } = require('@discordjs/voice')
 
 const { MusicSubscription } = require('./subscription.js')
 const { YoutubeTrack } = require('./youtube.js')
@@ -22,13 +27,13 @@ const music_commands = [
                     const url = interaction.options.getString('url')
                     const track = await YoutubeTrack.fromUrl(interaction, url)
                     console.log(`Youtube Track being queued is ${JSON.stringify(track)}`)
-                    
+
                     const youtubeResource = await track.createYoutubeResource()
-                    await interaction.editReply(`Enqueued **${track.title}**`);
+                    await interaction.editReply(`Enqueued **${track.title}**`)
                     return youtubeResource
                 } catch (error) {
                     console.warn(error);
-                    await interaction.editReply('Failed to generate stream from YouTube, please try again later!');
+                    await interaction.editReply('Failed to generate stream from YouTube, please try again later!')
                 }
             })
         }
@@ -36,22 +41,81 @@ const music_commands = [
     {
         name: 'skip',
         description: 'Skip to the next song in the queue',
+        process: async interaction => {
+            let subscription = subscriptions[interaction.guildId]
+
+            if (subscription) {
+                subscription.player.stop()
+                await interaction.reply(`Skipped song!`)
+            } else {
+                await interaction.reply(`Not playing in this server!`)
+            }
+        }
     },
     {
         name: 'queue',
         description: 'See the music queue',
+        process: async interaction => {
+            let subscription = subscriptions[interaction.guildId]
+
+            if (subscription) {
+                const current = subscription.player.state.status === AudioPlayerStatus.Idle
+					? `Nothing is currently playing!`
+					: `Playing **${subscription.player.state.resource.metadata.title}**`
+
+			    const queue = subscription.queue
+                    .slice(0, 5)
+                    .map((resource, index) => `${index + 1}) ${resource.metadata.title}`)
+                    .join('\n')
+
+                await interaction.reply(`${current}\n\n${queue}`)
+            } else {
+                await interaction.reply(`Not playing in this server!`)
+            }
+        }
     },
     {
         name: 'pause',
         description: 'Pauses the song that is currently playing',
+        process: async interaction => {
+            let subscription = subscriptions[interaction.guildId]
+
+            if (subscription) {
+                subscription.player.pause()
+                await interaction.reply({ content: `Paused!`, ephemeral: true })
+            } else {
+                await interaction.reply(`Not playing in this server!`)
+            }
+        }
     },
     {
         name: 'resume',
         description: 'Resume playback of the current song',
+        process: async interaction => {
+            let subscription = subscriptions[interaction.guildId]
+
+            if (subscription) {
+                subscription.player.unpause()
+                await interaction.reply(`Unpaused!`)
+            } else {
+                await interaction.reply(`Not playing in this server!`)
+            }
+        }
     },
     {
         name: 'leave',
         description: 'Leave the voice channel',
+        process: async interaction => {
+            let subscription = subscriptions[interaction.guildId]
+
+            if (subscription) {
+                subscription.connection.destroy()
+                delete subscriptions[interaction.guildId]
+                await interaction.reply(`Left channel!`)
+            } else {
+                await interaction.reply(`Not playing in this server!`)
+            }
+        }
     },
 ];
 

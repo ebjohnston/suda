@@ -15,10 +15,9 @@ Discord Bot utilizing discord.js (v13)
 
 1. Configure `settings.json` in the root installation directory. See `settings.json.example` for a template.
 
-1. Start bot by navigating to core directory and initializing core.js
+1. Start bot by navigating to core directory and initializing main.js
     ```
-    cd src/core
-    node main.js
+    node src/core/main.js
     ```
 
 ## Feature List
