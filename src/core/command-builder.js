@@ -1,24 +1,23 @@
-const { REST } = require('@discordjs/rest')
 const { Routes } = require('discord-api-types/v9')
 
-const settings = require('../../settings.json')
+const { REST } = require('@discordjs/rest')
+const { token, music } = require('../../settings.json')
+const rest = new REST({ version: '9' }).setToken(token)
 
-const rest = new REST({ version: '9' }).setToken(settings.token)
-
-const core_commands = require('./commands.js')
-const music_commands = require('../music/commands')
-const poe_commands = require('../path-of-exile/commands.js')
+const { core_commands } = require('./commands.js')
+const { music_commands } = require('../music/commands.js')
+// const { poe_commands } = require('../path-of-exile/commands.js')
 
 function buildCommands() {
     let commands = core_commands
 
-    if (music_commands.length && settings.modules.music) {
+    if (music_commands.length && music.enable) {
         commands = commands.concat(music_commands)
     }
 
-    if (poe_commands.length && settings.modules.pathofexile) {
-        commands = commands.concat(poe_commands)
-    }
+    // if (poe_commands.length && modules.pathofexile) {
+    //     commands = commands.concat(poe_commands)
+    // }
 
     return commands
 }

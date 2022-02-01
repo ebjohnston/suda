@@ -53,4 +53,6 @@ const core_commands = [
     }
 ];
 
-module.exports = core_commands
+module.exports = {
+    core_commands: core_commands
+}

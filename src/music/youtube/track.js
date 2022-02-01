@@ -1,19 +1,26 @@
 const { createAudioResource, demuxProbe } = require("@discordjs/voice")
-const { getInfo } = require('ytdl-core')
-const youtubedl = require('youtube-dl-exec')
+const { exec } = require('youtube-dl-exec')
 
 class YoutubeTrack {
-    constructor(url, title, onStart, onFinish, onError) {
+    constructor(interaction, url, title) {
         this.url = url
         this.title = title
-        this.onStart = onStart
-        this.onFinish = onFinish
-        this.onError = onError
+
+        this.onStart = () => {
+            interaction.editReply({ content: `Now playing: **${this.title}**!`, ephemeral: true }).catch(console.warn)
+        }
+        this.onFinish = () => {
+            interaction.editReply({ content: `Now finished: **${this.title}**!`, ephemeral: true }).catch(console.warn)
+        }
+        this.onError = (error) => {
+            console.warn(error)
+            interaction.editReply({ content: `Error: ${error.message}`, ephemeral: true }).catch(console.warn)
+        }
     }
 
-    createYoutubeResource() {
+    getYoutubeResource() {
         return new Promise((resolve, reject) => {
-            const process = youtubedl.exec(
+            const process = exec(
                 this.url,
                 {
                     o: '-',
@@ -29,6 +36,7 @@ class YoutubeTrack {
                 return
             }
             const stream = process.stdout
+
             const onError = error => {
                 if (!process.killed) {
                     process.kill()
@@ -36,6 +44,7 @@ class YoutubeTrack {
                 stream.resume()
                 reject(error)
             }
+
             process
                 .once('spawn', () => {
                     demuxProbe(stream)
@@ -44,26 +53,6 @@ class YoutubeTrack {
                 })
                 .catch(onError)
         })
-    }
-
-    static async fromUrl(interaction, url) {
-        const info = await getInfo(url)
-        const title = info.videoDetails.title
-
-        const track = new YoutubeTrack(url, title,
-            () => {
-                interaction.editReply({ content: `Now playing: **${track.title}**!`, ephemeral: true }).catch(console.warn)
-            },
-            () => {
-                interaction.editReply({ content: `Now finished: **${track.title}**!`, ephemeral: true }).catch(console.warn)
-            },
-            (error) => {
-                console.warn(error);
-                interaction.editReply({ content: `Error: ${error.message}`, ephemeral: true }).catch(console.warn)
-            }
-        )
-
-        return track
     }
 }
 

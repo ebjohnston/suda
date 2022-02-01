@@ -25,14 +25,14 @@ Discord Bot utilizing discord.js (v13)
 - Modular and extensible code organization with flags for each module
 - A music bot which supports multiple input sources
     - YouTube integration
-    - (Pending) Plex integration
+    - Plex integration
 
 ## To-Do List
 ### Overall Functionality
 - [ ] Make sure app command deployment works with fresh server
+- [ ] Switch text to rich embed
 - [ ] Add basic logging tools
 - [ ] Add unit testing
-- [ ] Plex integration
 - [ ] Path of Exile integration
     - [ ] PoE commands
     - [ ] PoE subscriptions
@@ -41,7 +41,4 @@ Discord Bot utilizing discord.js (v13)
 - [ ] core/img: Allow adding new images from discord CLI
 
 ### Documentation
-- [ ] Add installation / configuration instructions
-    - [x] installation
-    - [ ] configuration
 - [ ] Add badges for version / npm / testing / etc

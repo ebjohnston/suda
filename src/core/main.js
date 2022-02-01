@@ -1,14 +1,20 @@
-const settings = require('../../settings.json')
+const { token, plex } = require('../../settings.json')
 
 const { buildCommands, deployCommands } = require('./command-builder.js')
 const commands = buildCommands()
 const deployments = {}
 
+const { testPlexConnection } = require('../music/plex/api.js')
+
 const { Client, Intents } = require('discord.js')
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES] })
 
-client.on('ready', () => {
+client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`)
+
+  if (plex.enable) {
+    await testPlexConnection()
+  }
 })
 
 client.on('interactionCreate', async interaction => {
@@ -32,7 +38,12 @@ client.on('interactionCreate', async interaction => {
 
   console.log(`processing command ${command.name}...`)
 
-  command.process(interaction)
+  try {
+    command.process(interaction)
+  } catch (error) {
+    console.warn(error)
+    interaction.reply(`${command.name} encountered an error while processing. Please try again.`)
+  }
 })
 
-client.login(settings.token)
+client.login(token)
