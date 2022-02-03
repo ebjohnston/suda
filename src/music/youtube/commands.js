@@ -21,6 +21,8 @@ const youtube_commands = [
             }
         ],
         process: async interaction => {
+            await interaction.deferReply()
+            
             MusicSubscription.pushMusicResource(interaction, async () => {
                 try {
                     const url = interaction.options.getString('url')

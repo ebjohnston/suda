@@ -30,6 +30,28 @@ client.on('interactionCreate', async interaction => {
   const command = commands.find(element => element.name === interaction.commandName)
   if (!command) return
 
+  subcommandName = interaction.options.getSubcommand(false)
+  if (subcommandName) {
+    subcommand = command.options.find(element => element.name === subcommandName)
+
+    if (!subcommand.process) {
+      console.error(`${command.name} ${subcommand.name} attempted to run without a process defined!`)
+      interaction.reply(`${command.name} ${subcommand.name} does not have a process defined! Please contact the owner of this bot.`)
+      return
+    }
+
+    console.log(`processing subcommand ${command.name} ${subcommand.name}...`)
+
+    try {
+      subcommand.process(interaction)
+    } catch (error) {
+      console.warn(error)
+      interaction.reply(`${command.name} ${subcommand.name} encountered an error while processing. Please try again.`)
+    } finally {
+      return
+    }
+  }
+
   if (!command.process) {
     console.error(`${command.name} attempted to run without a process defined!`)
     interaction.reply(`${command.name} does not have a process defined! Please contact the owner of this bot.`)

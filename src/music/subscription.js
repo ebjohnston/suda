@@ -114,8 +114,6 @@ class MusicSubscription {
     }
 
     static async pushMusicResource(interaction, getMusicResource) {
-        await interaction.deferReply()
-    
         let subscription = this.subscriptions[interaction.guildId]
     
         // If a connection to the guild doesn't already exist and the user is in a voice channel, join that channel
