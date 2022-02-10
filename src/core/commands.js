@@ -10,6 +10,32 @@ const core_commands = [
         }
     },
     {
+        name: 'crypto',
+        description: 'sends a complete discussion of cryptocurrency (et al)',
+        process: async interaction => {
+            // go up twice because this file is currently in src/core
+            const directory = `${__dirname}/../../images`
+        
+            if (!existsSync(directory)) {
+                interaction.reply(`Error - the images directory was not found! Make sure you have images in the images directory.`)
+                return
+            }
+
+            const filenames = readdirSync(directory)
+            console.debug(`filenames for image search: ${JSON.stringify(filenames)}`)
+            const searchName = interaction.options.getString(`name`)
+            console.debug(`parameter for image search: ${searchName}`)
+            const foundImage = filenames.find(file => file.match(new RegExp("crypto", "i")))
+
+            if (!foundImage) {
+                interaction.reply({ content: `Error: crypto not found.`, ephemeral: true }).catch(console.warn)
+                return
+            }
+
+            interaction.reply({ files: [`${directory}/${foundImage}`] })
+        }
+    },
+    {
         name: 'img',
         description: 'sends an image from the server directory',
         options: [

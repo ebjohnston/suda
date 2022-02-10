@@ -10,7 +10,7 @@ testing.json
 .idea/
 
 # data folders
-images/
+#images/
 logs/
 
 # additional files
